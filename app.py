@@ -118,7 +118,7 @@ def home():
    if 'user_id' not in session:
       return redirect(url_for('login'))
       
-   return render_template("home.html",username=session.get('username'))
+   return render_template("index.html",username=session.get('username'))
 
 
 @app.route("/logout")
@@ -188,6 +188,53 @@ def get_weather_grid():
         return render_template("weather.html", temperature=results[0]['temperature'], windspeed=results[0]['windspeed'], precipitation=results[0]['precipitation'], grid_data=results,msg=msg)
     else:
         return render_template("weather.html", msg="Could not detect location.")
+
+@app.route('/api/get-ngos')
+def get_nearby_ngos(): 
+    return render_template("map.html")   
+
+@app.route('/api/live-ngos')
+def live_ngos():
+    # 1. Grab coordinates from the frontend request
+    lat = request.args.get('lat', type=float)
+    lon = request.args.get('lon', type=float)
+    radius = 50000  # 50km search radius
+
+    if not lat or not lon:
+        return jsonify({"error": "Missing coordinates"}), 400
+
+    # 2. Formulate the Overpass API query
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    query = f"""
+    [out:json];
+    (
+      node["office"="ngo"](around:{radius},{lat},{lon});
+      node["office"="charity"](around:{radius},{lat},{lon});
+      node["amenity"="social_facility"](around:{radius},{lat},{lon});
+    );
+    out body;
+    """
+
+    try:
+        # 3. Fetch data from OpenStreetMap
+        response = requests.post(overpass_url, data={'data': query})
+        data = response.json()
+
+        # 4. Clean up the messy OSM data into a simple list
+        ngos = []
+        for element in data.get('elements', []):
+            tags = element.get('tags', {})
+            ngos.append({
+                "name": tags.get('name', 'Unnamed Relief Facility'),
+                "type": tags.get('office', tags.get('amenity', 'NGO')),
+                "lat": element['lat'],
+                "lon": element['lon']
+            })
+        
+        return jsonify(ngos)
+
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch data"}), 500    
     
 if(__name__=="__main__"):
   app.run(debug=True,port='8000')

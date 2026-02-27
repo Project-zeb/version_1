@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SurgeGuard AI - Live NGO Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        #status { position: absolute; top: 10px; left: 50px; z-index: 1000; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+
+    <div id="status">Locating you...</div>
+    <div id="map"></div>
+
+    <script>
+        // Initialize an empty map
+        const map = L.map('map').setView([20.5937, 78.9629], 5); // Default center on India
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const statusDiv = document.getElementById('status');
+
+        // Ask browser for location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                // Move map to user's actual location
+                map.setView([lat, lon], 14);
+                L.marker([lat, lon]).addTo(map).bindPopup("<b>Your Location</b>").openPopup();
+                
+                statusDiv.innerText = "Fetching nearby NGOs...";
+
+                // Call your Flask API
+                fetch(`/api/live-ngos?lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(ngos => {
+                        statusDiv.innerText = `Found ${ngos.length} facilities near you.`;
+                        
+                        // Drop pins for every NGO found
+                        ngos.forEach(ngo => {
+                            L.marker([ngo.lat, ngo.lon])
+                             .addTo(map)
+                             .bindPopup(`<b>${ngo.name}</b><br>Type: ${ngo.type}`);
+                        });
+                    })
+                    .catch(error => {
+                        statusDiv.innerText = "Error loading NGOs.";
+                        console.error(error);
+                    });
+
+            }, () => {
+                statusDiv.innerText = "Location access denied.";
+            });
+        } else {
+            statusDiv.innerText = "Geolocation not supported by this browser.";
+        }
+    </script>
+</body>
+</html>
