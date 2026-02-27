@@ -4,23 +4,19 @@ import mysql.connector
 import os
 import math
 import secrets
-import requests # this library is used to make HTTP requests to external APIs, which can be useful 
-                # for fetching data or integrating third-party services into your Flask application.
+import requests # api will be called using this libraray
 
 
 # Load environment variables from .env file
 load_dotenv()
 
 
-# Fetch credentials
+
 db_host = os.getenv("DB_HOST")
 db_user = os.getenv("DB_USER")
 db_password = os.getenv("DB_PASSWORD")
 db_name=os.getenv("DB_NAME")
-# # Print values to debug (optional)
-# print("Host:", db_host)
-# print("User:", db_user)
-# print("Password:", db_password)
+
 try:
     conn = mysql.connector.connect(
         host=db_host,
@@ -29,7 +25,7 @@ try:
         database=db_name
     )
     cursor = conn.cursor()
-    # print("✅ Connected successfully!")
+   
 except mysql.connector.Error as err:
      print("❌ Connection failed:", err)
 
@@ -61,7 +57,22 @@ def generate_radius_points(lat, lon, radius_km=100):
         (lat, lon - delta_lon)
     ]
 
+# this will be used to get location of the user from the ip address using ip api
 
+def get_location_by_ip():
+    # In local development, '127.0.0.1' won't work. 
+    # We use an external service to get the public IP or a test IP.
+    try:
+        # This API returns JSON with lat, lon, city, etc.
+        response = requests.get('http://ip-api.com/json/')
+        data = response.json()
+        
+        if data['status'] == 'success':
+            return data['lat'], data['lon']
+    except Exception as e:
+        print(f"Error getting location: {e}")
+    
+    return None, None
 
 
 @app.route("/") #the route made for the port 5000
@@ -147,36 +158,36 @@ def signup():
 
 @app.route('/weather-grid', methods=['GET'])
 def get_weather_grid():
-    # Get params from URL (e.g., /weather-grid?lat=40.7&lon=-74.0)
-    # lat = float(request.args.get('lat'))
-    # lon = float(request.args.get('lon'))
-    lat=float(request.args.get('lat', 74))  # Default to 0 if not provided
-    lon=float(request.args.get('lon', 74))  # Default to 0 if not provided
+   
+    lat, lon = get_location_by_ip()
     
-    # Generate the 5 points (Center, North, South, East, West)
-    points = generate_radius_points(lat, lon)
-    msg=[]
-    results = []
-    for p_lat, p_lon in points:
-        weather_data = fetch_weather(p_lat, p_lon)
-        # Extract only temperature, windspeed, and precipitation from Open-Meteo API
-        current = weather_data.get('current_weather', {})
-        results.append({
-            "coords": [p_lat, p_lon],                
-            "temperature": current.get('temperature'),
-            "windspeed": current.get('windspeed'),
-            "precipitation": current.get('precipitation', 0)
-        })
-    # results[0]['temperature']=80 test case for heat wave alert
-    if results[0]['temperature']>40:
-        msg.append("Heat wave alert.")
-    if results[0]['windspeed']>20:
-            msg.append("Storm alert.")
-    if results[0]['precipitation']>10:
-        msg.append("Flood alert.") 
+    if lat and lon:
+       
+        points = generate_radius_points(lat, lon)
+        msg=[]
+        results = []
+        for p_lat, p_lon in points:
+            weather_data = fetch_weather(p_lat, p_lon)
+            # Extract only temperature, windspeed, and precipitation from Open-Meteo API
+            current = weather_data.get('current_weather', {})
+            results.append({
+                "coords": [p_lat, p_lon],                
+                "temperature": current.get('temperature'),
+                "windspeed": current.get('windspeed'),
+                "precipitation": current.get('precipitation', 0)
+            })
+        # results[0]['temperature']=80 test case for heat wave alert
+        if results[0]['temperature']>40:
+            msg.append("Heat wave alert.")
+        if results[0]['windspeed']>20:
+                msg.append("Storm alert.")
+        if results[0]['precipitation']>10:
+            msg.append("Flood alert.") 
+            
         
+        return render_template("weather.html", temperature=results[0]['temperature'], windspeed=results[0]['windspeed'], precipitation=results[0]['precipitation'], grid_data=results,msg=msg)
+    else:
+        return render_template("weather.html", msg="Could not detect location.")
     
-    return render_template("weather.html", temperature=results[0]['temperature'], windspeed=results[0]['windspeed'], precipitation=results[0]['precipitation'], grid_data=results,msg=msg)
-
 if(__name__=="__main__"):
   app.run(debug=True,port='8000')
