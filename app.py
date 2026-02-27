@@ -2,6 +2,7 @@ from flask import Flask, url_for, render_template, redirect, request,session, js
 from dotenv import load_dotenv
 import mysql.connector
 import os
+import json
 import math
 import secrets
 import requests # api will be called using this libraray
@@ -74,6 +75,16 @@ def get_location_by_ip():
     
     return None, None
 
+
+
+# Load NGO contact database
+def load_ngo_contacts():
+    try:
+        with open('ngos_contacts.json', 'r') as f:
+            data = json.load(f)
+            return {ngo['name']: ngo for ngo in data['ngo_contacts']}
+    except FileNotFoundError:
+        return {}
 
 @app.route("/") #the route made for the port 5000
 def index():
@@ -195,6 +206,9 @@ def get_nearby_ngos():
 
 @app.route('/api/live-ngos')
 def live_ngos():
+    # Load contact database
+    ngo_contacts_db = load_ngo_contacts()
+    
     # 1. Grab coordinates from the frontend request
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
@@ -220,21 +234,78 @@ def live_ngos():
         response = requests.post(overpass_url, data={'data': query})
         data = response.json()
 
-        # 4. Clean up the messy OSM data into a simple list
+        # 4. Clean up the messy OSM data and merge with contact info
         ngos = []
         for element in data.get('elements', []):
             tags = element.get('tags', {})
-            ngos.append({
-                "name": tags.get('name', 'Unnamed Relief Facility'),
+            ngo_name = tags.get('name', 'Unnamed Relief Facility')
+            
+            # Try to find contact info in our database
+            contact_info = ngo_contacts_db.get(ngo_name, {})
+            
+            ngo_entry = {
+                "name": ngo_name,
                 "type": tags.get('office', tags.get('amenity', 'NGO')),
                 "lat": element['lat'],
-                "lon": element['lon']
-            })
+                "lon": element['lon'],
+                "phone": contact_info.get('phone', 'Not available'),
+                "email": contact_info.get('email', 'Not available'),
+                "website": contact_info.get('website', 'Not available')
+            }
+            ngos.append(ngo_entry)
+        
+        # If no NGOs found from OSM, return NGOs from our contact database
+        if not ngos:
+            for name, ngo_info in ngo_contacts_db.items():
+                # Add dummy coordinates if not found in OSM
+                ngos.append({
+                    "name": name,
+                    "type": ngo_info.get('type', 'NGO'),
+                    "lat": lat,  # Use user's location
+                    "lon": lon,
+                    "phone": ngo_info.get('phone', 'Not available'),
+                    "email": ngo_info.get('email', 'Not available'),
+                    "website": ngo_info.get('website', 'Not available')
+                })
         
         return jsonify(ngos)
 
     except Exception as e:
-        return jsonify({"error": "Failed to fetch data"}), 500    
+        return jsonify({"error": f"Failed to fetch data: {str(e)}"}), 500
+
+@app.route('/api/contact-request', methods=['POST'])
+def contact_request():
+    """Handle NGO contact inquiries"""
+    try:
+        inquiry_data = request.json
+        
+        # Save inquiry to a file
+        inquiries_file = 'ngo_inquiries.json'
+        
+        # Load existing inquiries or create new list
+        try:
+            with open(inquiries_file, 'r') as f:
+                inquiries = json.load(f)
+        except FileNotFoundError:
+            inquiries = []
+        
+        # Add new inquiry
+        inquiries.append(inquiry_data)
+        
+        # Save back to file
+        with open(inquiries_file, 'w') as f:
+            json.dump(inquiries, f, indent=2)
+        
+        # You could also send email here or integrate with WhatsApp API
+        # For now, just save it
+        
+        return jsonify({
+            "success": True,
+            "message": "Your inquiry has been recorded. The NGO will contact you soon."
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": f"Failed to process request: {str(e)}"}), 500
     
 if(__name__=="__main__"):
   app.run(debug=True,port='8000')
