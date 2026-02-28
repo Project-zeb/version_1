@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Disaster | Save India</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .welcome {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .logout-btn {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
+        input[type="file"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .submit-btn {
+            padding: 12px 30px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .submit-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        .message.show {
+            display: block;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .helper-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Report a Disaster</h1>
+                <p class="welcome">Help us protect India - Report disaster incidents you witness</p>
+                {% if username %}
+                <p class="welcome">Logged in as: <strong>{{ username }}</strong></p>
+                {% else %}
+                <p class="welcome"><em>Please log in or sign up to submit your report</em></p>
+                {% endif %}
+            </div>
+            {% if username %}
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            {% else %}
+            <div>
+                <a href="{{ url_for('login') }}" class="logout-btn" style="background-color: #007bff; margin-right: 10px;">Login</a>
+                <a href="{{ url_for('signup') }}" class="logout-btn" style="background-color: #28a745;">Sign Up</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if msg %}
+            <div class="message show {{ msg_type }}">{{ msg }}</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" {% if not username %}onsubmit="return handleUnloggedSubmit(event)"{% endif %}>
+            <div class="form-group">
+                <label for="disaster_type">Disaster Type *</label>
+                <select name="disaster_type" id="disaster_type" required>
+                    <option value="">Select a disaster type</option>
+                    <option value="Earthquake">Earthquake</option>
+                    <option value="Flood">Flood</option>
+                    <option value="Landslide">Landslide</option>
+                    <option value="Cyclone">Cyclone/Storm</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Tsunami">Tsunami</option>
+                    <option value="Heavy Snow">Heavy Snow</option>
+                    <option value="Drought">Drought</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea name="description" id="description" placeholder="Describe the disaster, its impact, and affected areas..." required></textarea>
+                <p class="helper-text">Be as detailed as possible to help emergency responders</p>
+            </div>
+
+            <div class="form-group">
+                <label for="address_text">Location/Address *</label>
+                <input type="text" name="address_text" id="address_text" placeholder="Enter the location or address of the disaster" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="latitude">Latitude *</label>
+                    <input type="number" name="latitude" id="latitude" step="0.00000001" placeholder="e.g., 28.7041" required>
+                    <p class="helper-text">Get coordinates from Google Maps or GPS</p>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude *</label>
+                    <input type="number" name="longitude" id="longitude" step="0.00000001" placeholder="e.g., 77.1025" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="media_type">Media Type</label>
+                    <select name="media_type" id="media_type">
+                        <option value="">Select media type</option>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="media">Upload Media (Optional)</label>
+                    <input type="file" name="media" id="media" accept="image/*,video/*">
+                    <p class="helper-text">Upload a photo or video of the disaster</p>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Report Disaster</button>
+            <a href="{{ url_for('index') }}" class="back-link">← Go back to home</a>
+        </form>
+    </div>
+
+    <script>
+        // Prevent unlogged users from submitting
+        function handleUnloggedSubmit(event) {
+            event.preventDefault();
+            alert('Please log in or sign up first to submit a disaster report.');
+            window.location.href = "{{ url_for('login') }}";
+            return false;
+        }
+
+        // Get user's coordinates if they allow
+        function getCoordinates() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('latitude').value = position.coords.latitude.toFixed(8);
+                    document.getElementById('longitude').value = position.coords.longitude.toFixed(8);
+                }, (error) => {
+                    console.log("Geolocation permission denied or unavailable");
+                });
+            }
+        }
+
+        // Try to get coordinates on page load
+        window.addEventListener('load', () => {
+            // Only attempt if fields are empty
+            const lat = document.getElementById('latitude').value;
+            const lon = document.getElementById('longitude').value;
+            if (!lat || !lon) {
+                getCoordinates();
+            }
+        });
+
+        // Validate media type matches selected option
+        document.getElementById('media').addEventListener('change', function() {
+            const mediaType = document.getElementById('media_type').value;
+            if (!mediaType) {
+                alert('Please select a media type before uploading');
+                this.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

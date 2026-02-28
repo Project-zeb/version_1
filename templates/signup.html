@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up | Student Expense Tracker</title>
+    <title>Sign Up | Save India</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='login.css') }}"
@@ -59,6 +59,18 @@
             </div>
 
             <div class="input-group">
+              <label for="phone">phone</label>
+              <input
+                type="tel"
+                class="input"
+                name="phone"
+                id="phone"
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+
+            <div class="input-group">
               <label for="password">Password</label>
               <input
                 type="password"
@@ -68,6 +80,20 @@
                 placeholder="Create a password"
                 required
               />
+            </div>
+
+            <div class="input-group">
+              <label for="role">Role</label>
+              <select
+                class="input"
+                name="role"
+                id="role"
+                required
+              >
+                <option value="">Select a role</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
           </div>
 

@@ -6,6 +6,7 @@ import json
 import math
 import secrets
 import requests # api will be called using this libraray
+import bcrypt
 
 
 # Load environment variables from .env file
@@ -32,7 +33,38 @@ except mysql.connector.Error as err:
 
 app=Flask(__name__) #create name of Flask app which is name here
 
+# Initialize database tables
+def init_database():
+    """Create Disasters table with correct schema"""
+    try:
+        # First, drop the table if it exists with wrong constraints
+       
+        create_disasters_table = """
+        CREATE TABLE IF NOT EXISTS Disasters (
+            Disaster_id INT AUTO_INCREMENT PRIMARY KEY,
+            verify_status BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            media LONGBLOB,
+            media_type ENUM('video','image'),
+            reporter_id INT NOT NULL,
+            admin_id INT NULL,
+            disaster_type VARCHAR(100) NOT NULL,
+            description TEXT,
+            latitude DECIMAL(10, 8) NOT NULL,
+            longitude DECIMAL(11, 8) NOT NULL,
+            address_text VARCHAR(255),
+            FOREIGN KEY (reporter_id) REFERENCES Users(User_id) ON DELETE CASCADE,
+            FOREIGN KEY (admin_id) REFERENCES Users(User_id) ON DELETE SET NULL
+        );
+        """
+        cursor.execute(create_disasters_table)
+        conn.commit()
+        print("✅ Disasters table created successfully with correct schema")
+    except mysql.connector.Error as err:
+        print(f"❌ Error creating Disasters table: {err}")
 
+# Initialize database on startup
+init_database()
 
 app.secret_key = os.getenv('SECRET_KEY')
 
@@ -110,13 +142,23 @@ def login():
       username=request.form['username']
       password=request.form['password']
       
-      cursor.execute("select * from users where username=%s and password=%s",(username,password))
+    #   # When a user signs up:
+    #   password = password.encode('utf-8')
+    #   hashed = bcrypt.hashpw(password, bcrypt.gensalt())
+    #   for encryption
+
+      cursor.execute("select * from users where username=%s and password_hash=%s",(username,password))
       record=cursor.fetchone()
       if(record):
          session['logged_in']=True
          session['username']=username
         #  or session['username']=record[1]
          session['user_id']=record[0]
+         session['role']=record[8]  # Store role from database (index 8)
+         if(record[4]==True):
+            msg='Your account is blocked. Contact support.'
+            session.clear()
+
          return redirect(url_for('home'))
       else:
        msg='Wrong Credentials, Try Again.'
@@ -128,7 +170,8 @@ def login():
 def home():
    if 'user_id' not in session:
       return redirect(url_for('login'))
-      
+   if session.get('role') == 'ADMIN':  
+      return render_template("admin.html",username=session.get('username'))
    return render_template("index.html",username=session.get('username'))
 
 
@@ -137,7 +180,8 @@ def logout():
  session.pop('logged_in',None)
  session.pop('user_id',None)
  session.pop('username',None)
- return render_template("index.html")
+ session.pop('role',None)
+ return redirect(url_for('index'))
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
@@ -147,18 +191,34 @@ def signup():
         email = request.form['email']
         password = request.form['password']
         name=request.form['name']
+        role=request.form.get('role', 'USER').upper()  # Convert to uppercase
+        phone=request.form.get('phone') 
+        
+
+        # User_id int auto_increment primary key,
+        # Username varchar(30) unique not null,
+        # email_id varchar(30) unique not null,
+        # phone VARCHAR(10) NOT NULL,
+        # is_blocked BOOLEAN DEFAULT FALSE,
+        # created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        # password_hash VARCHAR(255) NOT NULL,
+        # role ENUM('ADMIN', 'USER') DEFAULT 'USER',
+
         if len(password) < 8:
             msg = "Password must be at least 8 characters."
             return render_template("signup.html", msg=msg)
 
-        cursor.execute("SELECT * FROM users WHERE username = %s OR email = %s", (username, email))
+        cursor.execute("SELECT * FROM users WHERE username = %s OR email_id = %s", (username, email))
         record = cursor.fetchone()
 
         if record:
-            msg = "User already exists. Try again."
+            if record[4]:  # Assuming is_blocked is the 5th column (index 4)
+                msg = "Your account is blocked. Contact support."
+            else:    
+                msg = "User already exists. Try again."
         else:
             try:
-                cursor.execute("INSERT INTO users VALUES (DEFAULT, %s, %s, %s,%s,DEFAULT)", (username, email, password,name))
+                cursor.execute("INSERT INTO users VALUES (DEFAULT,%s,%s,%s,%s,DEFAULT,DEFAULT,%s,%s)", (name,username, email,phone, password,role))
                 conn.commit()
                 return redirect(url_for('login'))
             except mysql.connector.Error as err:
@@ -306,6 +366,182 @@ def contact_request():
         
     except Exception as e:
         return jsonify({"error": f"Failed to process request: {str(e)}"}), 500
+
+@app.route('/get-all-users', methods=['GET'])
+def get_all_users():
+    """Get all users for admin dashboard"""
+    if 'user_id' not in session or session.get('role') != 'ADMIN':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    try:
+        cursor.execute("SELECT user_id, full_name, username, email_id, phone, role, is_blocked, created_at FROM users where role='USER'")
+        users = cursor.fetchall()
+        
+        user_list = []
+        for user in users:
+            user_list.append({
+                "user_id": user[0],
+                "name": user[1],
+                "username": user[2],
+                "email": user[3],
+                "phone": user[4],
+                "role": user[5],
+                "is_blocked": bool(user[6]),
+                "created_at": str(user[7])
+            })
+        
+        return jsonify({"success": True, "users": user_list})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/block-user', methods=['POST'])
+def block_user():
+    """Block or unblock a user"""
+    if 'user_id' not in session or session.get('role') != 'ADMIN':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    try:
+        data = request.json
+        user_id = data.get('user_id')
+        
+        # Get current status
+        cursor.execute("SELECT is_blocked FROM users WHERE user_id = %s", (user_id,))
+        result = cursor.fetchone()
+        
+        if not result:
+            return jsonify({"success": False, "message": "User not found"}), 404
+        
+        # Toggle the blocked status
+        new_status = not result[0]
+        cursor.execute("UPDATE users SET is_blocked = %s WHERE user_id = %s", (new_status, user_id))
+        conn.commit()
+        
+        return jsonify({"success": True, "message": "User status updated successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/get-all-incidents', methods=['GET'])
+def get_all_incidents():
+    """Get all reported disaster incidents for admin"""
+    if 'user_id' not in session or session.get('role') != 'ADMIN':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    try:
+        cursor.execute("""
+            SELECT d.Disaster_id, d.reporter_id, u.username, d.disaster_type, d.description,
+                   d.address_text, d.latitude, d.longitude, d.verify_status, d.media_type, 
+                   d.created_at
+            FROM Disasters d
+            JOIN Users u ON d.reporter_id = u.User_id
+            ORDER BY d.created_at DESC
+        """)
+        incidents = cursor.fetchall()
+        
+        incident_list = []
+        for incident in incidents:
+            incident_list.append({
+                "incident_id": incident[0],
+                "user_id": incident[1],
+                "username": incident[2],
+                "incident_type": incident[3],
+                "description": incident[4],
+                "location": incident[5],
+                "latitude": float(incident[6]) if incident[6] else None,
+                "longitude": float(incident[7]) if incident[7] else None,
+                "is_verified": bool(incident[8]),
+                "media_type": incident[9],
+                "created_at": str(incident[10])
+            })
+        
+        return jsonify({"success": True, "incidents": incident_list})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/verify-incident', methods=['POST'])
+def verify_incident():
+    """Verify a disaster incident"""
+    if 'user_id' not in session or session.get('role') != 'ADMIN':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    try:
+        data = request.json
+        incident_id = data.get('incident_id')
+        
+        cursor.execute("SELECT verify_status FROM Disasters WHERE Disaster_id = %s", (incident_id,))
+        result = cursor.fetchone()
+        
+        if not result:
+            return jsonify({"success": False, "message": "Incident not found"}), 404
+        
+        # Toggle the verified status and set admin_id
+        new_status = not result[0]
+        cursor.execute("UPDATE Disasters SET verify_status = %s, admin_id = %s WHERE Disaster_id = %s", 
+                      (new_status, session.get('user_id'), incident_id))
+        conn.commit()
+        
+        return jsonify({"success": True, "message": "Incident status updated successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/delete-incident', methods=['POST'])
+def delete_incident():
+    """Delete a disaster incident"""
+    if 'user_id' not in session or session.get('role') != 'ADMIN':
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    
+    try:
+        data = request.json
+        incident_id = data.get('incident_id')
+        
+        cursor.execute("DELETE FROM Disasters WHERE Disaster_id = %s", (incident_id,))
+        conn.commit()
+        
+        return jsonify({"success": True, "message": "Incident deleted successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/report-disaster', methods=['GET', 'POST'])
+def report_disaster():
+    """Report a new disaster incident"""
+    
+    if request.method == 'GET':
+        return render_template('report_disaster.html', username=session.get('username') if 'user_id' in session else None)
+    
+    # POST request - handle disaster reporting (requires authentication)
+    if 'user_id' not in session:
+        return render_template('report_disaster.html', msg='You must be logged in to submit a disaster report.', msg_type='error')
+    
+    try:
+        disaster_type = request.form.get('disaster_type')
+        description = request.form.get('description')
+        address_text = request.form.get('address_text')
+        latitude = request.form.get('latitude', type=float)
+        longitude = request.form.get('longitude', type=float)
+        media_type = request.form.get('media_type')  # 'image' or 'video'
+        
+        media_file = request.files.get('media')
+        media_blob = None
+        
+        if media_file:
+            media_blob = media_file.read()
+        
+        # If admin, auto-verify. If regular user, unverified by default
+        is_admin = session.get('role') == 'ADMIN'
+        verify_status = True if is_admin else False
+        admin_id = session.get('user_id') if is_admin else None
+        
+        cursor.execute("""
+            INSERT INTO Disasters 
+            (reporter_id, disaster_type, description, address_text, latitude, longitude, media_type, media, verify_status, admin_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (session.get('user_id'), disaster_type, description, address_text, latitude, longitude, media_type, media_blob, verify_status, admin_id))
+        
+        conn.commit()
+        
+        msg = "Your disaster report has been verified automatically!" if is_admin else "Disaster reported successfully. Thank you for your report! It will be verified by an admin soon."
+        return render_template('report_disaster.html', username=session.get('username'), msg=msg, msg_type='success')
+    except Exception as e:
+        return render_template('report_disaster.html', username=session.get('username'), msg=str(e), msg_type='error')
     
 if(__name__=="__main__"):
   app.run(debug=True,port='8000')

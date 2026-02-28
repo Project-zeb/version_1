@@ -24,7 +24,7 @@
                     <span class="nav-icon">🔔</span>
                     <span class="nav-text" style="color:white;">Live Alerts</span>
                 </button>
-                <button class="nav-item" data-page="report">
+                <button class="nav-item" data-page="report" onclick="window.location.href='{{ url_for('report_disaster') }}'">
                     <span class="nav-icon">⚡</span>
                     <span class="nav-text"  style="color:white;">Report</span>
                 </button>
@@ -124,72 +124,6 @@
                     <div class="disasters-grid" id="disastersGrid">
                         <!-- Disasters will be populated here -->
                     </div>
-                </div>
-            </div>
-
-            <!-- REPORT DISASTER PAGE -->
-            <div class="page" data-page="report">
-                <div class="form-container">
-                    <button class="back-button" onclick="switchPage('home')" style="color:white;">
-                        <span>←</span> Back
-                    </button>
-
-                    <h1 class="page-title" style="margin-bottom: 30px;">REPORT DISASTER</h1>
-
-                    <form class="form" id="reportForm" onsubmit="handleReportSubmit(event)">
-                        <div class="form-group">
-                            <label class="form-label">Disaster Type <span class="form-required">*</span></label>
-                            <div class="disaster-type-grid">
-                                <button type="button" class="disaster-type-btn" data-type="fire">
-                                    <div class="disaster-type-icon">🔥</div>
-                                    FIRE
-                                </button>
-                                <button type="button" class="disaster-type-btn" data-type="earthquake">
-                                    <div class="disaster-type-icon">🌍</div>
-                                    EARTHQUAKE
-                                </button>
-                                <button type="button" class="disaster-type-btn" data-type="landslide">
-                                    <div class="disaster-type-icon">⛰️</div>
-                                    LANDSLIDE
-                                </button>
-                            </div>
-                            <input type="hidden" id="selectedType" name="type">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Location <span class="form-required">*</span></label>
-                            <div class="location-input-group">
-                                <input type="text" class="form-input" id="locationInput" placeholder="Enter location or use GPS" required>
-                                <button type="button" class="gps-btn">📍 GPS</button>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Description <span class="form-required">*</span></label>
-                            <textarea class="form-textarea" id="descriptionInput" placeholder="Describe the incident in detail..." required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Image/Video (Optional)</label>
-                            <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-                                <div class="upload-icon">📤</div>
-                                <div class="upload-text">Click to upload or drag and drop</div>
-                                <input type="file" id="fileInput" class="upload-input">
-                            </div>
-                            <div id="fileSelected"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="ngoCheckbox" class="checkbox">
-                                <label for="ngoCheckbox" class="checkbox-label">Mark as NGO/Official Report</label>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="submit-btn">
-                            <span>✓</span> SUBMIT REPORT
-                        </button>
-                    </form>
                 </div>
             </div>
 
