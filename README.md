@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS users (
 - No session timeout
 
 **Recommendations for Production:**
-1. ❌ **DO NOT** use this version in production without fixing password storage
+1. [ALERT] **DO NOT** use this version in production without fixing password storage
 2. Implement bcrypt for password hashing
 3. Add CSRF tokens to all forms
 4. Set up rate limiting (e.g., using Flask-Limiter)
@@ -215,20 +215,21 @@ See [requirements.txt](requirements.txt) for complete dependency list:
 
 ```
 version_1/
-├── app.py                      # Main Flask application
-├── database_setup.sql          # Database initialization script
-├── requirements.txt            # Python dependencies
-├── .env.example               # Environment template
-├── .gitignore                 # Git ignore rules
-├── README.md                  # This file
-├── LICENSE                    # MIT License
-├── DEPLOYMENT_CHECKLIST.md    # Pre-deployment checklist
-└── templates/
-    ├── index.html             # Landing page
-    ├── login.html             # Login page
-    ├── signup.html            # Registration page
-    ├── home.html              # Dashboard
-    └── weather.html           # Weather display
+app.py                      # Main Flask application
+database_setup.sql          # Database initialization script
+requirements.txt            # Python dependencies
+.env.example               # Environment template
+.gitignore                 # Git ignore rules
+README.md                  # This file
+LICENSE                    # MIT License
+DEPLOYMENT_CHECKLIST.md    # Pre-deployment checklist
+
+templates/
+  index.html             # Landing page
+  login.html             # Login page
+  signup.html            # Registration page
+  home.html              # Dashboard
+  weather.html           # Weather display
 ```
 
 ---

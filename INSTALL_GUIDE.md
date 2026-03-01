@@ -134,7 +134,7 @@ DESCRIBE users;
 3. Double-click connection to open
 4. File → Open SQL Script
 5. Select database_setup.sql
-6. Click ⚡ Execute (or Ctrl+Shift+Enter)
+6. Click Execute (or Ctrl+Shift+Enter) to run the script
 7. Check Schema tab for save_india_db
 ```
 
@@ -175,13 +175,13 @@ for statement in sql_script.split(';'):
         try:
             cursor.execute(statement)
             conn.commit()
-            print(f"✅ Executed: {statement[:50]}...")
+            print(f"[DONE] Executed: {statement[:50]}...")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"[ERROR] {e}")
 
 cursor.close()
 conn.close()
-print("\n✅ Database setup complete!")
+print("\n[DONE] Database setup complete!")
 ```
 
 **Run it:**
@@ -286,7 +286,7 @@ SELECT COUNT(*) FROM users;
 
 # ☑️ Python imports
 # 2. Test imports:
-python -c "import flask, mysql.connector, requests; print('✅ All imports work')"
+python -c "import flask, mysql.connector, requests; print('[DONE] All imports work')"
 
 # ☑️ Environment variables
 # 3. Check .env is readable:
@@ -473,13 +473,13 @@ python
 
 When everything is set up correctly:
 
-1. ✅ `python --version` shows 3.8+
-2. ✅ `mysql -u root -p -e "USE save_india_db; SHOW TABLES;"` shows users table
-3. ✅ `pip list` shows Flask, mysql-connector-python, etc.
-4. ✅ `.env` file exists with all required variables
-5. ✅ `python app.py` runs without errors
-6. ✅ Browser shows Welcome page at http://localhost:8000
-7. ✅ Can sign up and login successfully
+1. [DONE] `python --version` shows 3.8+
+2. [DONE] `mysql -u root -p -e "USE save_india_db; SHOW TABLES;"` shows users table
+3. [DONE] `pip list` shows Flask, mysql-connector-python, etc.
+4. [DONE] `.env` file exists with all required variables
+5. [DONE] `python app.py` runs without errors
+6. [DONE] Browser shows Welcome page at http://localhost:8000
+7. [DONE] Can sign up and login successfully
 
 ---
 

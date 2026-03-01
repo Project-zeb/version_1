@@ -30,7 +30,7 @@ IF NOT EXIST ".env.example" (
    PAUSE
    EXIT /B 1
 )
-ECHO ✓ Project directory verified
+ECHO [DONE] Project directory verified
 
 ECHO.
 ECHO [2/5] Checking Git configuration...
@@ -47,7 +47,7 @@ IF ERRORLEVEL 1 (
    PAUSE
    EXIT /B 1
 )
-ECHO ✓ Git configuration verified
+ECHO [DONE] Git configuration verified
 
 ECHO.
 ECHO [3/5] Checking branch status...
@@ -72,7 +72,7 @@ IF ERRORLEVEL 1 (
       EXIT /B 1
    )
 )
-ECHO ✓ Currently on ayaan-v1.0 branch
+ECHO [DONE] Currently on Ayaan-v1.0 branch
 
 ECHO.
 ECHO [4/5] Staging changes for commit...

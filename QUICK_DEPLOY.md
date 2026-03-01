@@ -169,33 +169,33 @@ git diff origin/ayaan-v1.0..HEAD
 After push, verify these files are on GitHub (under ayaan-v1.0 branch):
 
 ```
-✅ app.py
-✅ requirements.txt
-✅ README.md
-✅ .env.example
-✅ .gitignore
-✅ LICENSE
-✅ database_setup.sql
-✅ INSTALL_GUIDE.md
-✅ VERSION_HISTORY.md
-✅ DEPLOYMENT_CHECKLIST.md
-✅ FINAL_DEPLOYMENT_GUIDE.md
-✅ deploy_v1.0.bat
-✅ deploy_v1.0.sh
-✅ templates/index.html
-✅ templates/login.html
-✅ templates/signup.html
-✅ templates/home.html
-✅ templates/weather.html
+[PRESENT] app.py
+[PRESENT] requirements.txt
+[PRESENT] README.md
+[PRESENT] .env.example
+[PRESENT] .gitignore
+[PRESENT] LICENSE
+[PRESENT] database_setup.sql
+[PRESENT] INSTALL_GUIDE.md
+[PRESENT] VERSION_HISTORY.md
+[PRESENT] DEPLOYMENT_CHECKLIST.md
+[PRESENT] FINAL_DEPLOYMENT_GUIDE.md
+[PRESENT] deploy_v1.0.bat
+[PRESENT] deploy_v1.0.sh
+[PRESENT] templates/index.html
+[PRESENT] templates/login.html
+[PRESENT] templates/signup.html
+[PRESENT] templates/home.html
+[PRESENT] templates/weather.html
 ```
 
-❌ These should NOT be present (correctly excluded):
+[EXCLUDED] These should NOT be present (correctly excluded):
 ```
-❌ .env (should be in .gitignore)
-❌ venv/ (should be in .gitignore)
-❌ __pycache__/ (should be in .gitignore)
-❌ *.pyc (should be in .gitignore)
-❌ .DS_Store (should be in .gitignore)
+[EXCLUDED] .env (should be in .gitignore)
+[EXCLUDED] venv/ (should be in .gitignore)
+[EXCLUDED] __pycache__/ (should be in .gitignore)
+[EXCLUDED] *.pyc (should be in .gitignore)
+[EXCLUDED] .DS_Store (should be in .gitignore)
 ```
 
 ---

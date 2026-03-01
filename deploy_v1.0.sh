@@ -38,7 +38,7 @@ if [ ! -f ".env.example" ]; then
    echo -e "${RED}ERROR: .env.example not found. Some setup files may be missing.${NC}"
    exit 1
 fi
-echo -e "${GREEN}✓ Project directory verified${NC}"
+echo -e "${GREEN}[DONE] Project directory verified${NC}"
 
 echo ""
 echo "[2/5] Checking Git configuration..."
@@ -53,7 +53,7 @@ if ! git status > /dev/null 2>&1; then
    echo -e "${RED}ERROR: Not a valid git repository${NC}"
    exit 1
 fi
-echo -e "${GREEN}✓ Git configuration verified${NC}"
+echo -e "${GREEN}[DONE] Git configuration verified${NC}"
 
 echo ""
 echo "[3/5] Checking branch status..."
@@ -73,7 +73,7 @@ if ! git branch | grep -q "^\* Ayaan-v1.0"; then
       exit 1
    fi
 fi
-echo -e "${GREEN}✓ Currently on ayaan-v1.0 branch${NC}"
+echo -e "${GREEN}[DONE] Currently on Ayaan-v1.0 branch${NC}"
 
 echo ""
 echo "[4/5] Staging changes for commit..."

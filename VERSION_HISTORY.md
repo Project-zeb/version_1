@@ -167,12 +167,12 @@ Changes:
 ### File Distribution
 ```
 Project Root
-├── Python: 1 file (app.py)
-├── HTML: 5 files (templates/)
-├── Configuration: 3 files (.env.example, requirements.txt, .gitignore)
-├── Documentation: 4 files (README.md, INSTALL_GUIDE.md, DEPLOYMENT_CHECKLIST.md, VERSION_HISTORY.md)
-├── Database: 1 file (database_setup.sql)
-└── Other: 1 file (LICENSE)
+Python: 1 file (app.py)
+HTML: 5 files (templates/)
+Configuration: 3 files (.env.example, requirements.txt, .gitignore)
+Documentation: 4 files (README.md, INSTALL_GUIDE.md, DEPLOYMENT_CHECKLIST.md, VERSION_HISTORY.md)
+Database: 1 file (database_setup.sql)
+Other: 1 file (LICENSE)
 ```
 
 ### Lines of Code
@@ -221,11 +221,11 @@ git show <commit-hash>
 
 | Feature | v1.0 | v2.0 |
 |---------|------|------|
-| Password Storage | Plaintext ❌ | Bcrypt Hash ✅ |
-| CSRF Protection | None ❌ | Implemented ✅ |
-| Rate Limiting | None ❌ | Implemented ✅ |
-| Password Hashing | No ❌ | Yes ✅ |
-| Session Timeout | None ❌ | Configurable ✅ |
+| Password Storage | Plaintext [NO] | Bcrypt Hash [YES] |
+| CSRF Protection | None [NO] | Implemented [YES] |
+| Rate Limiting | None [NO] | Implemented [YES] |
+| Password Hashing | No [NO] | Yes [YES] |
+| Session Timeout | None [NO] | Configurable [YES] |
 | API Validation | Basic | Enhanced |
 | Database Connection | Single | Connection Pool |
 | Error Logging | Basic | Comprehensive |
@@ -261,16 +261,16 @@ pip install -r requirements.txt
 ### v1.0.0 - March 2026
 
 **Initial Release Features:**
-- ✅ User registration and login
-- ✅ Weather data fetching and display
-- ✅ Disaster alert system
-- ✅ IP-based location detection
-- ✅ Session management
-- ✅ Responsive web interface
-- ✅ Database integration
-- ✅ `.env.example` configuration template
-- ✅ SQL setup script
-- ✅ Comprehensive documentation
+- [YES] User registration and login
+- [YES] Weather data fetching and display
+- [YES] Disaster alert system
+- [YES] IP-based location detection
+- [YES] Session management
+- [YES] Responsive web interface
+- [YES] Database integration
+- [YES] `.env.example` configuration template
+- [YES] SQL setup script
+- [YES] Comprehensive documentation
 
 **Known Limitations:**
 - ⚠️ Passwords stored as plaintext (security concern)
@@ -361,7 +361,7 @@ Related documentation:
 ## Version Roadmap
 
 ```
-v1.0 (Current) ───────► v2.0 (Main) ───────► v3.0 (Planned)
+v1.0 (Current) -----> v2.0 (Main) -----> v3.0 (Planned)
   Core Features      Security + UI        Mobile App
   Basic Auth         Bcrypt Hashing       Native Support
   Weather API        CSRF Protection      Advanced ML
