@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Reporting & Alert System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body >
+    <div class="container" >
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>SAFE INDIA</h1>
+                <button class="toggle-btn" id="toggleBtn">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="home">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text" style="color:white;">Home</span>
+                </button>
+                <button class="nav-item" data-page="alerts">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text" style="color:white;">Live Alerts</span>
+                </button>
+                <button class="nav-item" data-page="report" onclick="window.location.href='{{ url_for('report_disaster') }}'">
+                    <span class="nav-icon">⚡</span>
+                    <span class="nav-text"  style="color:white;">Report</span>
+                </button>
+                 <button class="nav-item" id="localAreaBtn" onclick="window.location.href='{{ url_for('get_weather_grid') }}'">
+                    <span class="nav-icon">📍</span>
+                    <span class="nav-text"  style="color:white;">Local Area</span>
+                </button>
+                <button class="nav-item" data-page="analytics">
+                    <span class="nav-icon">[ANALYTICS]</span>
+                    <span class="nav-text"  style="color:white;">Analytics</span>
+                </button>
+                <button class="nav-item" data-page="admin" style="display: none;">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text"  style="color:white;">Admin</span>
+                </button>
+                <button class="nav-item" id="getNGO" onclick="window.location.href='{{ url_for('get_nearby_ngos') }}'">
+                    <span class="nav-icon">📍</span>
+                    <span class="nav-text"  style="color:white;">Get Local NGOs</span>
+                </button>
+            </nav>
+         
+            <div class="sidebar-footer">
+                {% if not session.get('user_id') %}
+                <button class="login-btn inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-medium shadow-md hover:bg-indigo-700 transition" id="loginBtn" onclick="window.location.href='{{ url_for('login') }}'">
+                Login to Get Started
+            </button>
+            {% else %}
+                    <button class="login-btn inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-medium shadow-md hover:bg-indigo-700 transition" id="loginBtn" onclick="window.location.href='{{ url_for('logout') }}'">
+            Logout
+            </button>
+                   
+                        <span class="user-icon"></span>
+                        <span class="username">{{ username }}</span>
+                
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            
+            <!-- HOME PAGE -->
+            <div class="page active" data-page="home">
+                <div class="status-banner">
+                    <span class="status-dot"></span>
+                    <h3 style="color:white;">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Blanditiis perspiciatis porro quaerat reprehenderit ab nostrum aut recusandae labore excepturi neque pariatur consequuntur assumenda magni iste ipsa, incidunt in laboriosam? Natus?</h3>
+                </div>
+
+                <div class="page-header">
+                    <h1 class="page-title"><u>ABOUT<span class="highlight"></span>    DISASTER</u></h1>
+                    <p class="page-subtitle" style="color:white;"><b>Disasters may arise from natural hazards—such as earthquakes, floods, cyclones, and landslides—or from human-induced events, including industrial accidents, fires, and environmental degradation. They often occur suddenly and can have long-lasting impacts on infrastructure, livelihoods, and public health. Effective disaster risk management involves preparedness, mitigation, response, and recovery strategies aimed at minimizing losses and enhancing the resilience of communities.</b></p>
+                </div>
+
+                <div class="hero-section">
+                    <div class="quick-access">
+                        <button class="action-card" data-page="report">
+                            <span class="action-card-icon">⚡</span>
+                            <div class="action-card-content">
+                                <h3>REPORT DISASTER</h3>
+                                <p>Submit incident details immediately</p>
+                            </div>
+                        </button>
+                        <button class="action-card" onclick="window.location.href='{{ url_for('mobile_home') }}'">
+                            <span class="action-card-icon">[MOBILE]</span>
+                            <div class="action-card-content">
+                                <h3>MOBILE SOS FLOW</h3>
+                                <p>Open app-style emergency screens</p>
+                            </div>
+                        </button>
+                        <button class="action-card" data-page="alerts">
+                            <span class="action-card-icon">�</span>
+                            <div class="action-card-content">
+                                <h3>LIVE ALERTS</h3>
+                                <p><span id="disasterCount">3</span> active disasters</p>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label" style="color:black;">ACTIVE DISASTERS</div>
+                            <div class="stat-value" id="activeStat">3</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label" style="color:black;">VERIFIED</div>
+                            <div class="stat-value" id="verifiedStat">2</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label" style="color:black;">PENDING</div>
+                            <div class="stat-value" id="pendingStat">1</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label" style="color:black;">APPROVED</div>
+                            <div class="stat-value" id="approvedStat">1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="disasters-section">
+                    <h2 class="section-title">
+                        <span>[ALERTS]</span>
+                        ACTIVE DISASTERS
+                    </h2>
+                    <div class="disasters-grid" id="disastersGrid">
+                        <!-- Disasters will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALERTS PAGE -->
+            <div class="page" data-page="alerts">
+                <div class="alerts-container">
+                    <button class="back-button" onclick="switchPage('home')"  style="color:white;">
+                        <span>←</span> Back
+                    </button>
+
+                    <h1 class="page-title" style="margin-bottom: 20px;">LIVE ALERTS</h1>
+                    <p class="page-subtitle" style="margin-bottom: 30px;">Real-time disaster monitoring feed</p>
+
+                    <div class="map-placeholder">
+                        <div class="map-icon">[MAP]</div>
+                        <div class="map-text">Live Map - Integration Ready</div>
+                        <div class="map-subtext">Connect with Google Maps or OpenStreetMap API</div>
+                    </div>
+
+                    <h2 class="section-title" style="margin-bottom: 20px;">
+                        <span>[FEED]</span>
+                        ACTIVE DISASTERS FEED
+                    </h2>
+
+                    <div class="feed-list" id="feedList">
+                        <!-- Alerts will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOCAL AREA PAGE -->
+            <div class="page" data-page="localarea">
+                <div class="local-area-container">
+                    <button class="back-button" onclick="switchPage('home')"  style="color:white;">
+                        <span>←</span> Back
+                    </button>
+
+                    <h1 class="page-title" style="margin-bottom: 10px;">LOCAL AREA</h1>
+                    <p class="page-subtitle" style="margin-bottom: 30px;">Disasters near your location</p>
+
+                    <div class="filters">
+                        <button class="filter-btn active" data-filter="all">ALL</button>
+                        <button class="filter-btn" data-filter="5km">Within 5km</button>
+                        <button class="filter-btn" data-filter="10km">Within 10km</button>
+                        <button class="filter-btn" data-filter="fire">[FIRE] FIRE</button>
+                        <button class="filter-btn" data-filter="earthquake">[EARTHQUAKE] EARTHQUAKE</button>
+                        <button class="filter-btn" data-filter="landslide">[LANDSLIDE] LANDSLIDE</button>
+                    </div>
+
+                    <div class="disasters-grid" id="localDisastersGrid">
+                        <!-- Local disasters will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS PAGE -->
+            <div class="page" data-page="analytics">
+                <div class="analytics-container">
+                    <button class="back-button" onclick="switchPage('home')" style="color:white;">
+                        <span>←</span> Back
+                    </button>
+
+                    <h1 class="page-title" style="margin-bottom: 10px;">ANALYTICS</h1>
+                    <p class="page-subtitle" style="margin-bottom: 30px;">Disaster trends and statistics</p>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">TOTAL DISASTERS</div>
+                            <div class="kpi-value">47</div>
+                            <div class="kpi-trend kpi-positive">↑ +12%</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">AVG RESPONSE TIME</div>
+                            <div class="kpi-value">2.3m</div>
+                            <div class="kpi-trend kpi-negative">↓ -8%</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">VERIFICATION RATE</div>
+                            <div class="kpi-value">94%</div>
+                            <div class="kpi-trend kpi-positive">↑ +3%</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">AFFECTED PEOPLE</div>
+                            <div class="kpi-value">1.2K</div>
+                            <div class="kpi-trend kpi-negative">↓ -5%</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3 class="chart-title">Disasters by Type</h3>
+                            <div class="chart-placeholder">
+                                <div class="chart-icon">[CHART]</div>
+                                <span>Chart Integration Ready</span>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Geographic Distribution</h3>
+                            <div class="chart-placeholder">
+                                <div class="chart-icon">[MAP]</div>
+                                <span>Chart Integration Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN PANEL PAGE -->
+            <div class="page" data-page="admin">
+                <div class="admin-container">
+                    <button class="back-button" onclick="switchPage('home')">
+                        <span>←</span> Back
+                    </button>
+
+                    <div class="admin-header">
+                        <div>
+                            <h1 class="page-title" style="margin-bottom: 10px;">ADMIN PANEL</h1>
+                            <p class="page-subtitle"  style="color:white;">Report verification and moderation dashboard</p>
+                        </div>
+                        <div class="admin-status">
+                            <div class="admin-status-label">[ADMIN] ADMIN MODE ACTIVE</div>
+                        </div>
+                    </div>
+
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="pending">PENDING REPORTS</button>
+                        <button class="tab-btn" data-tab="approved">APPROVED</button>
+                        <button class="tab-btn" data-tab="rejected">REJECTED</button>
+                    </div>
+
+                    <div class="reports-list" id="reportsList">
+                        <!-- Reports will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div class="notification" id="notification" style="display: none;">
+        <span class="notification-icon">[OK]</span>
+        <span id="notificationMessage">Report submitted successfully!</span>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

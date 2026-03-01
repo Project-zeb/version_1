@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Disaster Guard • Organization Mobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --phone:#f9f4f5; --text:#16253b; --muted:#7c8ea9; --line:#e8dcdf; --blue:#2f86ff; --green:#2dc98c; --orange:#ffb347; --red:#ff6b63; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Inter,sans-serif; background:radial-gradient(circle at 14% 18%,#dbe9fa 0%,rgba(219,233,250,0) 34%),radial-gradient(circle at 86% 0%,#f6dfe3 0%,rgba(246,223,227,0) 36%),linear-gradient(180deg,#eaf1f8,#f4f7fc); min-height:100vh; display:grid; place-items:center; padding:20px 12px; color:var(--text); }
+        .phone { width:min(100%,392px); height:min(840px,95vh); border-radius:34px; border:1px solid #d8e3ef; background:linear-gradient(180deg,#fff9fa,#f9f4f5); box-shadow:0 22px 50px rgba(96,126,163,.25); overflow:hidden; position:relative; }
+        .phone::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 86% 8%,rgba(255,182,190,.18) 0%,rgba(255,182,190,0) 40%), radial-gradient(circle at 6% 30%,rgba(120,167,255,.15) 0%,rgba(120,167,255,0) 36%); pointer-events:none; }
+        .status-notch { height:28px; display:flex; justify-content:center; align-items:center; }
+        .notch { width:120px; height:28px; border-radius:0 0 16px 16px; background:#e4edf7; }
+        .app { height:calc(100% - 100px); overflow:auto; padding:14px 14px 90px; display:grid; gap:12px; position:relative; z-index:1; }
+        .topbar { display:flex; justify-content:space-between; align-items:start; gap:8px; }
+        .location small { display:block; color:var(--muted); font-size:.72rem; font-weight:600; }
+        .location strong { font-size:.95rem; }
+        .pill { border-radius:999px; border:1px solid #d8e8fa; background:rgba(255,255,255,.72); backdrop-filter:blur(3px); color:#3c5f89; font-size:.68rem; font-weight:700; padding:5px 9px; }
+        .status-box { border-radius:14px; border:1px solid #d8e7f9; background:linear-gradient(165deg,rgba(255,255,255,.92),rgba(244,249,255,.88)); backdrop-filter:blur(2px); padding:10px; color:#58769b; font-size:.75rem; font-weight:600; box-shadow:0 8px 18px rgba(84,117,157,.1); }
+        .list { display:grid; gap:12px; }
+        .org-card {
+            border-radius:16px;
+            border:1px solid #d2e4f9;
+            background:linear-gradient(165deg,#f8fbff,#eef5ff 48%,#f7f2f4);
+            padding:12px;
+            display:grid;
+            gap:10px;
+            box-shadow:0 10px 20px rgba(80,117,166,.16);
+            color:#2e4f78;
+            position:relative;
+            overflow:hidden;
+            transition:transform .26s cubic-bezier(.22,1,.36,1), box-shadow .26s ease, border-color .22s ease;
+            animation:cardIn .42s cubic-bezier(.22,1,.36,1) both;
+        }
+        .org-card::before {
+            content:"";
+            position:absolute;
+            width:150px;
+            height:150px;
+            border-radius:50%;
+            background:radial-gradient(circle,rgba(122,169,245,.18) 0%,rgba(122,169,245,0) 72%);
+            right:-58px;
+            top:-68px;
+            pointer-events:none;
+        }
+        .org-head { display:flex; justify-content:space-between; align-items:center; gap:10px; position:relative; z-index:1; }
+        .org-profile { display:flex; align-items:center; gap:9px; min-width:0; }
+        .org-main { min-width:0; }
+        .org-main h4 {
+            font-size:.85rem;
+            line-height:1.3;
+            color:#244d7c;
+            display:-webkit-box;
+            -webkit-line-clamp:2;
+            -webkit-box-orient:vertical;
+            overflow:hidden;
+        }
+        .type-tag {
+            margin-top:2px;
+            display:inline-block;
+            border-radius:999px;
+            font-size:.61rem;
+            font-weight:700;
+            letter-spacing:.02em;
+            padding:3px 8px;
+            background:#e8f1ff;
+            color:#2160b7;
+            text-transform:uppercase;
+            border:1px solid #cde0ff;
+        }
+        .quick-contact {
+            width:34px;
+            height:34px;
+            border-radius:50%;
+            border:1px solid #d8e8fa;
+            background:#ffffff;
+            display:grid;
+            place-items:center;
+            color:#4a78c8;
+            font-size:.96rem;
+            text-decoration:none;
+            flex-shrink:0;
+            transition:transform .2s ease, box-shadow .22s ease, background .2s ease;
+        }
+        .quick-contact.disabled {
+            color:#9ab2d8;
+            cursor:default;
+            pointer-events:none;
+        }
+        .meta { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; position:relative; z-index:1; }
+        .meta-item {
+            border-top:1px solid #dbe8fa;
+            padding-top:7px;
+            display:grid;
+            gap:2px;
+        }
+        .meta-label { font-size:.66rem; color:#6a86ac; font-weight:600; }
+        .meta-value { font-size:.8rem; color:#2f537f; font-weight:700; }
+        .contacts {
+            display:grid;
+            gap:5px;
+            border-top:1px solid #dbe8fa;
+            padding-top:8px;
+            position:relative;
+            z-index:1;
+        }
+        .contact-row { font-size:.72rem; color:#4e6f98; }
+        .contact-row a { color:#2a66ba; text-decoration:none; font-weight:700; border-bottom:1px dashed rgba(42,102,186,.34); }
+        .actions { display:flex; gap:8px; position:relative; z-index:1; }
+        .actions a {
+            flex:1;
+            text-align:center;
+            text-decoration:none;
+            border-radius:10px;
+            font-size:.73rem;
+            font-weight:700;
+            padding:9px 0;
+            border:1px solid #d4e5fb;
+            transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, filter .2s ease;
+        }
+        .btn-call { background:linear-gradient(180deg,#f0faf4,#e3f6ec); border-color:#cfeedd; color:#1f8b5b; }
+        .btn-route { background:linear-gradient(180deg,#eef5ff,#e4efff); border-color:#d1e2ff; color:#2a66ba; }
+        .btn-disabled {
+            background:linear-gradient(180deg,#f2f4f7,#e8ecf2) !important;
+            border-color:#d7dde7 !important;
+            color:#8b98ac !important;
+            pointer-events:none;
+            cursor:not-allowed;
+            box-shadow:none !important;
+            transform:none !important;
+        }
+        .contact-row.unavailable {
+            color:#92a0b5;
+        }
+        .contact-row.unavailable a {
+            color:#92a0b5;
+            border-bottom:none;
+            pointer-events:none;
+        }
+        .org-card.unavailable-card {
+            background:linear-gradient(165deg,#f0f2f5,#e8ecf2 55%,#e3e7ee);
+            border-color:#d5dce8;
+            box-shadow:0 6px 12px rgba(109,124,150,.12);
+            filter:grayscale(.15);
+            pointer-events:none;
+        }
+        .org-card.unavailable-card::before {
+            background:radial-gradient(circle,rgba(141,156,183,.18) 0%,rgba(141,156,183,0) 72%);
+        }
+        .org-card.unavailable-card .org-main h4,
+        .org-card.unavailable-card .meta-value,
+        .org-card.unavailable-card .type-tag,
+        .org-card.unavailable-card .contact-row,
+        .org-card.unavailable-card .meta-label {
+            color:#7f8ea5 !important;
+        }
+        .org-card.unavailable-card .type-tag {
+            background:#e6eaf1;
+            border-color:#d2d9e6;
+        }
+        @keyframes cardIn {
+            from { opacity:0; transform:translateY(10px) scale(.98); }
+            to { opacity:1; transform:translateY(0) scale(1); }
+        }
+        @media (hover:hover) {
+            .org-card:hover {
+                transform:translateY(-6px) scale(1.015);
+                box-shadow:0 18px 30px rgba(74,112,165,.24);
+                border-color:#bdd9f7;
+            }
+            .org-card .contacts,
+            .org-card .actions {
+                max-height:0;
+                opacity:0;
+                transform:translateY(-4px);
+                overflow:hidden;
+                pointer-events:none;
+                transition:max-height .28s ease, opacity .24s ease, transform .24s ease;
+            }
+            .org-card:hover .contacts,
+            .org-card:hover .actions {
+                max-height:180px;
+                opacity:1;
+                transform:translateY(0);
+                pointer-events:auto;
+            }
+            .quick-contact:hover {
+                transform:scale(1.06);
+                box-shadow:0 8px 14px rgba(93,128,178,.2);
+                background:linear-gradient(180deg,#ffffff,#edf4ff);
+            }
+            .actions a:hover {
+                transform:translateY(-2px) scale(1.02);
+                box-shadow:0 10px 16px rgba(91,126,176,.2);
+                filter:brightness(1.01);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .org-main h4 { font-size:.79rem; }
+            .meta-label { font-size:.62rem; }
+            .meta-value { font-size:.74rem; }
+            .actions a { font-size:.68rem; padding:8px 0; }
+        }
+        .empty { border-radius:12px; border:1px dashed #d3e1f3; background:linear-gradient(180deg,#f9fcff,#f2f8ff); color:#6482a8; font-size:.76rem; text-align:center; padding:12px; }
+        .nav { position:absolute; left:0; right:0; bottom:0; height:72px; background:rgba(255,255,255,.92); border-top:1px solid #dbe7f5; display:grid; grid-template-columns:repeat(3,1fr); padding:8px 10px 12px; }
+        .nav a, .nav button { text-decoration:none; color:#6986ac; display:grid; place-items:center; gap:0; font-size:.66rem; font-weight:700; border:none; background:transparent; }
+        .icon-svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+        .menu-nav { color:#4f6f9b !important; font-weight:800 !important; }
+        .menu-nav .icon-svg { transition:transform .35s cubic-bezier(.22,1,.36,1), color .22s ease; transform-origin:center; }
+        .menu-nav.open .icon-svg { transform:rotate(180deg) scale(1.08); color:#ff6f66; }
+        .nav-menu {
+            position:absolute;
+            right:10px;
+            bottom:82px;
+            width:192px;
+            border:1px solid #c9dbf1;
+            border-radius:18px 18px 18px 28px;
+            background:linear-gradient(165deg,#2f4d74,#223a5d);
+            box-shadow:0 14px 26px rgba(28,52,84,.34);
+            z-index:90;
+            display:grid;
+            gap:8px;
+            padding:10px 10px 10px 14px;
+            opacity:0;
+            visibility:hidden;
+            pointer-events:none;
+            transform:translateY(10px) scale(.96);
+            transform-origin:bottom right;
+            transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .22s ease, visibility 0s linear .28s;
+        }
+        .nav-menu.show { opacity:1; visibility:visible; pointer-events:auto; transform:translateY(0) scale(1); transition-delay:0s; }
+        .nav-menu a {
+            text-decoration:none;
+            color:#eef5ff;
+            font-size:.86rem;
+            font-weight:700;
+            letter-spacing:.01em;
+            padding:9px 10px;
+            border:1px solid rgba(208,222,244,.24);
+            border-radius:11px;
+            background:rgba(255,255,255,.06);
+            opacity:0;
+            transform:translateX(10px);
+            transition:color .2s ease, background .2s ease, border-color .2s ease, opacity .22s ease, transform .26s cubic-bezier(.22,1,.36,1);
+        }
+        .nav-menu.show a { opacity:1; transform:translateX(0); }
+        .nav-menu.show a:nth-child(1) { transition-delay:.04s; }
+        .nav-menu.show a:nth-child(2) { transition-delay:.08s; }
+        .nav-menu.show a:nth-child(3) { transition-delay:.12s; }
+        .nav-menu.show a:nth-child(4) { transition-delay:.16s; }
+        .nav-menu a.active { color:#fff; border-color:#ff948e; background:linear-gradient(135deg,#ff7d74,#ff6660); }
+        .sos-nav { color:#c23d46 !important; font-weight:800 !important; }
+        .sos-core {
+            width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+            background:linear-gradient(135deg,#ff6f66,#ff4f58); color:#fff; box-shadow:0 8px 14px rgba(255,91,97,.28);
+            font-size:.78rem; letter-spacing:.3px; position:relative; animation:sosBeat 1.5s ease-in-out infinite;
+        }
+        .sos-core::after { content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(255,95,102,.32); animation:sosRing 1.5s ease-out infinite; }
+        @keyframes sosBeat { 0%,100% { transform:scale(1); } 45% { transform:scale(1.09); } }
+        @keyframes sosRing { 0% { transform:scale(.92); opacity:.7; } 100% { transform:scale(1.22); opacity:0; } }
+        .sos-popup {
+            position:absolute; left:50%; transform:translateX(-50%); bottom:84px;
+            border:1px solid #ffc6c2; background:#fff3f2; color:#a53f45; border-radius:11px;
+            font-size:.74rem; font-weight:700; padding:8px 11px; display:none; z-index:7; white-space:nowrap;
+            box-shadow:0 10px 20px rgba(196,95,101,.2);
+        }
+        .sos-popup.show { display:block; }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <div class="status-notch"><div class="notch"></div></div>
+        <main class="app">
+            <header class="topbar">
+                <div class="location"><small>Nearby Help</small><strong>Organizations & NGOs</strong></div>
+                <span class="pill" id="orgCount">0 found</span>
+            </header>
+
+            <section class="status-box" id="statusBox">Detecting your location to find nearby organizations…</section>
+
+            <section class="list" id="orgList">
+                <article class="empty">Loading nearby organizations…</article>
+            </section>
+        </main>
+
+        <nav class="nav">
+            <a href="{{ url_for('mobile_home') }}" aria-label="Home">
+                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+            </a>
+            <button id="sosNavBtn" class="sos-nav" aria-label="SOS"><span class="sos-core">SOS</span></button>
+            <button id="menuNavBtn" class="menu-nav" aria-label="Menu">
+                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+            </button>
+        </nav>
+        <div class="nav-menu" id="navMenu">
+            <a href="{{ url_for('mobile_alerts') }}">Alerts</a>
+            <a href="{{ url_for('mobile_analysis') }}">Analysis</a>
+            <a href="{{ url_for('mobile_organization') }}" class="active">Organizations</a>
+            <a href="{{ url_for('mobile_satellite') }}">Satellite View</a>
+            <a href="{{ url_for('report_disaster') }}">Report</a>
+        </div>
+        <div class="sos-popup" id="sosPopup">Emergency details sending...</div>
+    </section>
+
+    <script>
+        const statusBox = document.getElementById('statusBox');
+        const orgList = document.getElementById('orgList');
+        const orgCount = document.getElementById('orgCount');
+
+        const safeValue = (value) => {
+            const text = String(value || '').trim();
+            return text && text.toLowerCase() !== 'not available' ? text : 'Not available';
+        };
+
+        const renderOrganizations = (organizations) => {
+            const items = Array.isArray(organizations) ? organizations : [];
+            orgCount.textContent = `${items.length} found`;
+
+            if (items.length === 0) {
+                orgList.innerHTML = '<article class="empty">No nearby organization found right now.</article>';
+                return;
+            }
+
+            orgList.innerHTML = items.slice(0, 20).map((ngo, index) => {
+                const type = String(ngo?.type || 'ngo').replaceAll('_', ' ');
+                const distanceKm = Number(ngo?.distance_km || 0);
+                const duration = safeValue(ngo?.estimated_duration);
+                const phone = safeValue(ngo?.phone);
+                const email = safeValue(ngo?.email);
+                const website = safeValue(ngo?.website);
+                const address = safeValue(ngo?.address);
+                const areas = Array.isArray(ngo?.areas) ? ngo.areas.filter(Boolean).slice(0, 2).join(', ') : '';
+                const mapsUrl = `https://maps.google.com/?q=${ngo.lat},${ngo.lon}`;
+                const callLink = phone !== 'Not available' ? `tel:${phone.replace(/\s+/g, '')}` : '';
+                const name = String(ngo?.name || 'Unnamed Organization').trim();
+                const hasPrimaryInfo = [phone, email, website, address].some((value) => value !== 'Not available');
+                const isUnavailableCard = !hasPrimaryInfo;
+
+                return `
+                    <article class="org-card ${isUnavailableCard ? 'unavailable-card' : ''}" style="animation-delay:${Math.min(index * 0.04, 0.28)}s;">
+                        <div class="org-head">
+                            <div class="org-profile">
+                                <div class="org-main">
+                                    <h4>${name}</h4>
+                                    <span class="type-tag">${type}</span>
+                                </div>
+                            </div>
+                            ${phone === 'Not available'
+                                ? '<span class="quick-contact disabled" aria-label="No call available">☎</span>'
+                                : `<a class="quick-contact" href="${callLink}" aria-label="Call ${name}">☎</a>`}
+                        </div>
+                        <div class="meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Distance</span>
+                                <span class="meta-value">${distanceKm.toFixed(1)} km</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Estimated Time</span>
+                                <span class="meta-value">${duration}</span>
+                            </div>
+                        </div>
+                        <div class="contacts">
+                            ${address !== 'Not available' ? `<div class="contact-row">📍 ${address}</div>` : '<div class="contact-row unavailable">📍 Not available</div>'}
+                            ${areas ? `<div class="contact-row">🗺️ Coverage: ${areas}</div>` : ''}
+                            <div class="contact-row ${phone === 'Not available' ? 'unavailable' : ''}">📞 ${phone === 'Not available' ? 'Not available' : `<a href="${callLink}">${phone}</a>`}</div>
+                            <div class="contact-row ${email === 'Not available' ? 'unavailable' : ''}">✉️ ${email === 'Not available' ? 'Not available' : `<a href="mailto:${email}">${email}</a>`}</div>
+                            <div class="contact-row ${website === 'Not available' ? 'unavailable' : ''}">🌐 ${website === 'Not available' ? 'Not available' : `<a href="${website}" target="_blank" rel="noopener">Visit website</a>`}</div>
+                        </div>
+                        <div class="actions">
+                            ${phone === 'Not available' ? '<a class="btn-call btn-disabled" href="#" onclick="return false;">No Call</a>' : `<a class="btn-call" href="${callLink}">Call</a>`}
+                            <a class="btn-route ${isUnavailableCard ? 'btn-disabled' : ''}" href="${isUnavailableCard ? '#' : mapsUrl}" target="_blank" rel="noopener">Route</a>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        };
+
+        const fetchOrganizations = async (lat, lon) => {
+            statusBox.textContent = 'Fetching nearby organizations…';
+            try {
+                const response = await fetch(`/api/live-ngos?lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                const organizations = Array.isArray(data) ? data : [];
+                organizations.sort((a, b) => Number(a?.distance_km || 0) - Number(b?.distance_km || 0));
+                renderOrganizations(organizations);
+                statusBox.textContent = `Showing nearby organizations with contact details and estimated duration.`;
+            } catch (error) {
+                statusBox.textContent = 'Unable to load organizations at the moment.';
+                orgList.innerHTML = '<article class="empty">Please try again after a few seconds.</article>';
+            }
+        };
+
+        let lastLat = null;
+        let lastLon = null;
+        let lastFetchAt = 0;
+
+        const shouldRefetch = (lat, lon) => {
+            if (lastLat === null || lastLon === null) return true;
+            const movedKm = Math.abs((lat - lastLat) * 111) + Math.abs((lon - lastLon) * 111);
+            return movedKm >= 1;
+        };
+
+        const loadNearby = () => {
+            if (!navigator.geolocation) {
+                statusBox.textContent = 'Geolocation is not supported on this device.';
+                fetchOrganizations(28.6139, 77.2090);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    lastLat = lat;
+                    lastLon = lon;
+                    lastFetchAt = Date.now();
+                    fetchOrganizations(lat, lon);
+
+                    navigator.geolocation.watchPosition(
+                        (nextPosition) => {
+                            const nextLat = nextPosition.coords.latitude;
+                            const nextLon = nextPosition.coords.longitude;
+                            const enoughTime = (Date.now() - lastFetchAt) > 45000;
+                            if (shouldRefetch(nextLat, nextLon) && enoughTime) {
+                                lastLat = nextLat;
+                                lastLon = nextLon;
+                                lastFetchAt = Date.now();
+                                fetchOrganizations(nextLat, nextLon);
+                            }
+                        },
+                        () => {},
+                        { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
+                    );
+                },
+                () => {
+                    statusBox.textContent = 'Location permission denied. Using default city center.';
+                    fetchOrganizations(28.6139, 77.2090);
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        };
+
+        const sosBtn = document.getElementById('sosNavBtn');
+        const menuNavBtn = document.getElementById('menuNavBtn');
+        const navMenu = document.getElementById('navMenu');
+        const sosPopup = document.getElementById('sosPopup');
+        let pressTimer;
+        let longPressTriggered = false;
+
+        const startPress = () => {
+            longPressTriggered = false;
+            pressTimer = setTimeout(() => {
+                longPressTriggered = true;
+                sosPopup.classList.add('show');
+                setTimeout(() => {
+                    sosPopup.classList.remove('show');
+                    window.location.href = "{{ url_for('mobile_sos') }}";
+                }, 1000);
+            }, 700);
+        };
+
+        const cancelPress = () => clearTimeout(pressTimer);
+
+        sosBtn.addEventListener('pointerdown', startPress);
+        sosBtn.addEventListener('pointerup', () => {
+            cancelPress();
+            if (!longPressTriggered) window.location.href = "{{ url_for('mobile_sos') }}";
+        });
+        sosBtn.addEventListener('pointerleave', cancelPress);
+        sosBtn.addEventListener('pointercancel', cancelPress);
+
+        if (menuNavBtn && navMenu) {
+            menuNavBtn.setAttribute('aria-expanded', 'false');
+            menuNavBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const isOpen = navMenu.classList.toggle('show');
+                menuNavBtn.classList.toggle('open', isOpen);
+                menuNavBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            navMenu.addEventListener('click', (event) => event.stopPropagation());
+            document.addEventListener('click', () => {
+                navMenu.classList.remove('show');
+                menuNavBtn.classList.remove('open');
+                menuNavBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        loadNearby();
+        setInterval(() => {
+            if (lastLat !== null && lastLon !== null) {
+                fetchOrganizations(lastLat, lastLon);
+            }
+        }, 120000);
+    </script>
+</body>
+</html>

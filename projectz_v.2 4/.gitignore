@@ -1,0 +1,93 @@
+# Environment variables - CRITICAL: Do not commit .env files
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+app.db
+*.db-journal
+
+# Log files
+*.log
+logs/
+api-logs.txt
+*.log.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deployment scripts (use with caution)
+deploy_*.ps1
+deploy_*.sh
+PUSH_TO_GITHUB.bat
+PUSH_TO_GITHUB.md
+*.bat
+
+# Generated files
+COMPLETION_REPORT.md
+DEPLOYMENT_REPORT_*.md
+
+# Upload directories
+uploads/
+temp_uploads/
+
+# Media files (optional - adjust as needed)
+*.mp4
+*.mov
+*.avi
+
+# Cache
+.cache/
+*.cache

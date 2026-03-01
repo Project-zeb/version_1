@@ -1,0 +1,68 @@
+{
+  "ngo_contacts": [
+    {
+      "name": "Doctors Without Borders",
+      "type": "charity",
+      "phone": "+91-11-4141-5555",
+      "email": "contact@dwb-india.org",
+      "website": "https://www.dwb-india.org",
+      "areas": ["Delhi", "Mumbai", "Bangalore"]
+    },
+    {
+      "name": "Indian Red Cross Society",
+      "type": "ngo",
+      "phone": "+91-11-2371-7777",
+      "email": "info@redcross.org.in",
+      "website": "https://www.redcrossindia.org",
+      "areas": ["Pan India"]
+    },
+    {
+      "name": "UNICEF India",
+      "type": "charity",
+      "phone": "+91-11-4141-4141",
+      "email": "delhi@unicef.org",
+      "website": "https://www.unicef.org/india",
+      "areas": ["Delhi", "all cities"]
+    },
+    {
+      "name": "World Health Organization",
+      "type": "ngo",
+      "phone": "+91-11-4165-2000",
+      "email": "whoindia@who.int",
+      "website": "https://www.who.int/india",
+      "areas": ["Pan India"]
+    },
+    {
+      "name": "Save the Children India",
+      "type": "charity",
+      "phone": "+91-80-4182-2222",
+      "email": "contact@savethechildren.org.in",
+      "website": "https://www.savethechildren.in",
+      "areas": ["Bangalore", "South India"]
+    },
+    {
+      "name": "Oxfam India",
+      "type": "ngo",
+      "phone": "+91-20-2556-3333",
+      "email": "info@oxfamindia.org",
+      "website": "https://www.oxfamindia.org",
+      "areas": ["Pune", "Mumbai", "all cities"]
+    },
+    {
+      "name": "Help Age India",
+      "type": "social_facility",
+      "phone": "+91-11-4155-1234",
+      "email": "contact@helpageindia.org",
+      "website": "https://www.helpageindia.org",
+      "areas": ["Delhi", "all cities"]
+    },
+    {
+      "name": "Childline India",
+      "type": "social_facility",
+      "phone": "1098",
+      "email": "contact@childlineindia.org.in",
+      "website": "https://www.childlineindia.org.in",
+      "areas": ["Pan India"]
+    }
+  ]
+}
