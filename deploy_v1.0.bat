@@ -2,7 +2,7 @@
 REM ============================================================================
 REM Save India v1.0 - Final Deployment Script (Windows Batch)
 REM ============================================================================
-REM This script prepares and pushes the v1.0 release to the ayaan-v1.0 branch
+REM This script prepares and pushes the v1.0 release to the Ayaan-v1.0 branch
 REM
 REM Prerequisites:
 REM - Git installed and configured
@@ -51,21 +51,21 @@ ECHO ✓ Git configuration verified
 
 ECHO.
 ECHO [3/5] Checking branch status...
-git branch | findstr "ayaan-v1.0" >nul 2>&1
+git branch | findstr "Ayaan-v1.0" >nul 2>&1
 IF ERRORLEVEL 1 (
    ECHO.
    ECHO Creating branch ayaan-v1.0...
-   git checkout -b ayaan-v1.0
+    git checkout -b Ayaan-v1.0
    IF ERRORLEVEL 1 (
       ECHO ERROR: Failed to create branch
       PAUSE
       EXIT /B 1
    )
 )
-git branch | findstr "* ayaan-v1.0" >nul 2>&1
+git branch | findstr "* Ayaan-v1.0" >nul 2>&1
 IF ERRORLEVEL 1 (
    ECHO Switching to ayaan-v1.0 branch...
-   git checkout ayaan-v1.0
+    git checkout Ayaan-v1.0
    IF ERRORLEVEL 1 (
       ECHO ERROR: Failed to switch branch
       PAUSE
@@ -123,8 +123,8 @@ IF ERRORLEVEL 1 (
 )
 
 ECHO.
-ECHO Pushing ayaan-v1.0 branch...
-git push -u origin ayaan-v1.0
+ECHO Pushing Ayaan-v1.0 branch...
+git push -u origin Ayaan-v1.0
 
 IF ERRORLEVEL 1 (
    ECHO.
@@ -144,10 +144,10 @@ ECHO ===========================================================================
 ECHO.
 ECHO Next steps:
 ECHO 1. Visit: https://github.com/yourusername/Project-Zeb
-ECHO 2. Switch to ayaan-v1.0 branch
+ECHO 2. Switch to Ayaan-v1.0 branch
 ECHO 3. Verify all files are present
 ECHO 4. Review README.md for full documentation
-ECHO 5. Share branch with team: https://github.com/yourusername/Project-Zeb/tree/ayaan-v1.0
+ECHO 5. Share branch with team: https://github.com/yourusername/Project-Zeb/tree/Ayaan-v1.0
 ECHO.
 ECHO Documentation files created:
 ECHO - README.md - Comprehensive project documentation

@@ -3,7 +3,7 @@
 ################################################################################
 # Save India v1.0 - Final Deployment Script (Bash for macOS/Linux)
 ################################################################################
-# This script prepares and pushes the v1.0 release to the ayaan-v1.0 branch
+# This script prepares and pushes the v1.0 release to the Ayaan-v1.0 branch
 #
 # Prerequisites:
 # - Git installed and configured
@@ -57,17 +57,17 @@ echo -e "${GREEN}✓ Git configuration verified${NC}"
 
 echo ""
 echo "[3/5] Checking branch status..."
-if ! git branch | grep -q "ayaan-v1.0"; then
-   echo "Creating branch ayaan-v1.0..."
-   git checkout -b ayaan-v1.0
+if ! git branch | grep -q "Ayaan-v1.0"; then
+   echo "Creating branch Ayaan-v1.0..."
+   git checkout -b Ayaan-v1.0
    if [ $? -ne 0 ]; then
       echo -e "${RED}ERROR: Failed to create branch${NC}"
       exit 1
    fi
 fi
-if ! git branch | grep -q "^\* ayaan-v1.0"; then
-   echo "Switching to ayaan-v1.0 branch..."
-   git checkout ayaan-v1.0
+if ! git branch | grep -q "^\* Ayaan-v1.0"; then
+   echo "Switching to Ayaan-v1.0 branch..."
+   git checkout Ayaan-v1.0
    if [ $? -ne 0 ]; then
       echo -e "${RED}ERROR: Failed to switch branch${NC}"
       exit 1
@@ -103,7 +103,7 @@ Changes:
 - All sensitive files properly configured in .gitignore
 
 Status: v1.0 is production-ready and stable
-Branch: ayaan-v1.0
+Branch: Ayaan-v1.0
 Latest: v2.0 on main branch" || {
    echo ""
    echo "Note: No changes to commit (already up to date)"
@@ -120,8 +120,8 @@ if ! git remote -v | grep -q "origin"; then
 fi
 
 echo ""
-echo "Pushing ayaan-v1.0 branch..."
-if ! git push -u origin ayaan-v1.0; then
+echo "Pushing Ayaan-v1.0 branch..."
+if ! git push -u origin Ayaan-v1.0; then
    echo ""
    echo -e "${RED}ERROR: Push failed${NC}"
    echo "Troubleshooting:"
@@ -138,10 +138,10 @@ echo "==========================================================================
 echo ""
 echo "Next steps:"
 echo "1. Visit: https://github.com/yourusername/Project-Zeb"
-echo "2. Switch to ayaan-v1.0 branch"
+echo "2. Switch to Ayaan-v1.0 branch"
 echo "3. Verify all files are present"
 echo "4. Review README.md for full documentation"
-echo "5. Share branch with team: https://github.com/yourusername/Project-Zeb/tree/ayaan-v1.0"
+echo "5. Share branch with team: https://github.com/yourusername/Project-Zeb/tree/Ayaan-v1.0"
 echo ""
 echo "Documentation files created:"
 echo "- README.md - Comprehensive project documentation"

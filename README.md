@@ -1,41 +1,41 @@
 # Save India - Version 1.0
 
-**🔐 This is Version 1.0 - A historical release on branch `ayaan-v1.0`**
+**[SECURE] This is Version 1.0 - A historical release on branch `Ayaan-v1.0`**
 
 A Flask-based disaster management application with weather alerts and user authentication. This version serves as the foundational release with core features.
 
-> **⚠️ Note:** For the latest features and improvements, please refer to **Version 2.0** which is available on the `main` branch.
+> **[NOTE] For the latest features and improvements, please refer to **Version 2.0** which is available on the `main` branch.
 
 ---
 
-## 📋 Features (v1.0)
+## Features (v1.0)
 
 ### Core Authentication
-- ✅ User registration with email validation
-- ✅ Secure login with session management
-- ✅ Password validation (minimum 8 characters)
-- ✅ Session-based user authentication
-- ✅ Logout functionality with session cleanup
+[FEATURE] User registration with email validation
+[FEATURE] Secure login with session management
+[FEATURE] Password validation (minimum 8 characters)
+[FEATURE] Session-based user authentication
+[FEATURE] Logout functionality with session cleanup
 
 ### Weather & Location Features
-- ✅ IP-based automatic location detection
-- ✅ Real-time weather data via Open-Meteo API
-- ✅ Weather grid generation (5-point radius analysis)
-- ✅ Smart disaster alerts:
-  - 🔥 Heat wave alerts (temperature > 40°C)
-  - 🌪️ Storm alerts (wind speed > 20 km/h)
-  - 🌊 Flood alerts (precipitation > 10mm)
+[FEATURE] IP-based automatic location detection
+[FEATURE] Real-time weather data via Open-Meteo API
+[FEATURE] Weather grid generation (5-point radius analysis)
+[FEATURE] Smart disaster alerts:
+  - Heat wave alerts (temperature > 40°C)
+  - Storm alerts (wind speed > 20 km/h)
+  - Flood alerts (precipitation > 10mm)
 
 ### User Interface
-- ✅ Clean, responsive web interface with Tailwind CSS
-- ✅ Dedicated login/signup pages
-- ✅ Dashboard with personalized greeting
-- ✅ Weather information display
-- ✅ Real-time alert notifications
+[FEATURE] Clean, responsive web interface with Tailwind CSS
+[FEATURE] Dedicated login/signup pages
+[FEATURE] Dashboard with personalized greeting
+[FEATURE] Weather information display
+[FEATURE] Real-time alert notifications
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - **Python 3.8+** (3.9+ recommended)
@@ -124,7 +124,7 @@ The application will start on `http://localhost:8000`
 
 ---
 
-## 📊 Database Schema
+## Database Schema (SQL)
 
 ### Users Table (`users`)
 ```sql
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication Routes
 | Route | Method | Purpose |
@@ -168,16 +168,16 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## 🔒 Security Features & Notes
+## Security Features & Notes
 
-✅ **Implemented:**
+[IMPLEMENTED] Security Features:
 - SQL parameterized queries (prevents SQL injection)
 - Session-based authentication
 - Password length validation (minimum 8 characters)
 - Environment variable usage for sensitive data
 - `.gitignore` protection for `.env` file
 
-⚠️ **Known Security Issues (Fixed in v2.0):**
+[WARNING] Known Security Issues (Fixed in v2.0):
 - Passwords stored as plaintext (should use bcrypt/hashing)
 - No CSRF protection on forms
 - No rate limiting on login attempts
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## 📦 Dependencies
+## Dependencies
 
 See [requirements.txt](requirements.txt) for complete dependency list:
 
@@ -211,7 +211,7 @@ See [requirements.txt](requirements.txt) for complete dependency list:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 version_1/
@@ -233,7 +233,7 @@ version_1/
 
 ---
 
-## 🔄 Version History & Git Commits
+## Version History & Git Commits
 
 ### Version 1.0 Release Information
 - **Branch:** `ayaan-v1.0`
@@ -282,7 +282,7 @@ git log --decorate --graph --oneline
 
 ---
 
-## 🧪 Testing the Application
+## Testing the Application
 
 ### 1. Test User Registration
 ```
@@ -318,7 +318,7 @@ git log --decorate --graph --oneline
 
 ---
 
-## ⚠️ Troubleshooting
+## Troubleshooting
 
 ### Database Connection Error
 ```
@@ -362,7 +362,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
-## 🔗 Related Resources
+## Related Resources
 
 - **Flask Documentation:** https://flask.palletsprojects.com/
 - **MySQL Documentation:** https://dev.mysql.com/doc/
@@ -371,13 +371,13 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🚀 Next Steps & Future Versions
+## Next Steps & Future Versions
 
 This is Version 1.0, the foundational release. For enhanced features, improvements, and fixes:
 
@@ -398,7 +398,7 @@ cd path/to/version_2
 
 ---
 
-## 💬 Support & Contributions
+## Support & Contributions
 
 For issues, questions, or contributions:
 1. Check [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)
@@ -409,5 +409,5 @@ For issues, questions, or contributions:
 
 **Last Updated:** March 2026
 **Version:** 1.0 (Historical Release)
-**Branch:** ayaan-v1.0
+**Branch:** Ayaan-v1.0
 **Status:** Stable (Legacy)

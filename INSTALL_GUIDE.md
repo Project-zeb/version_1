@@ -1,6 +1,6 @@
 # Installation & Setup Guide - Save India v1.0
 
-## 🎯 Quick Start (5 minutes)
+## Quick Start (5 minutes)
 
 ### For Experienced Developers:
 ```bash
@@ -29,7 +29,7 @@ python app.py
 
 ---
 
-## 📚 Detailed Setup Guide
+## Detailed Setup Guide
 
 ### Part 1: System Requirements
 
@@ -56,8 +56,6 @@ python -m venv --help
 ---
 
 ### Part 2: Environment Setup
-
-#### Step 1: Create Project Directory
 ```bash
 # Navigate to desired location
 cd /path/to/projects
@@ -303,7 +301,7 @@ python app.py
 
 ---
 
-## 🐛 Common Issues & Solutions
+## Common Issues & Solutions
 
 ### Issue 1: MySQL Connection Error
 ```
@@ -402,7 +400,7 @@ python -c "import requests; print(requests.get('http://ip-api.com/json/').json()
 
 ---
 
-## 📊 Verify Database Setup
+## Verify Database Setup
 
 After database creation, check tables:
 
@@ -434,7 +432,7 @@ SELECT * FROM users;
 
 ---
 
-## 🎓 Additional Commands
+## Additional Commands
 
 ### View Project Dependencies
 ```bash
@@ -471,7 +469,7 @@ python
 
 ---
 
-## ✅ Success Indicators
+## Success Indicators
 
 When everything is set up correctly:
 
@@ -485,7 +483,7 @@ When everything is set up correctly:
 
 ---
 
-## 🚀 Next Steps
+## Next Steps
 
 After successful setup:
 
@@ -497,7 +495,7 @@ After successful setup:
 
 ---
 
-## 📞 Need Help?
+## Need Help?
 
 1. Check this guide again for common issues
 2. Review logs: `python app.py` (watch for error messages)

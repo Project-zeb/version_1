@@ -1,41 +1,41 @@
 # Version History & Release Notes - Save India
 
-## 🏷️ Current Version: 1.0
+## Current Version: 1.0
 
 **Release Date:** March 2026  
-**Branch:** `ayaan-v1.0`  
+**Branch:** `Ayaan-v1.0`  
 **Status:** Stable / Historical Release  
 **Latest Version:** 2.0 (on `main` branch)
 
 ---
 
-## 📜 Version 1.0 Release Summary
+## Version 1.0 Release Summary
 
 **Save India v1.0** is the foundational release that establishes the core features and architecture for a disaster management web application. This version focuses on user authentication, weather monitoring, and real-time alert generation for disaster situations.
 
 ### What's New in v1.0
 
 #### Core Features
-- 👤 **User Authentication System**
+- [AUTHENTICATION] User Authentication System
   - Registration with email validation
   - Login with credentials
   - Session management
   - Logout functionality
   - Password validation (minimum 8 characters)
 
-- 🌤️ **Weather Monitoring**
+- [WEATHER] Weather Monitoring
   - Real-time weather data via Open-Meteo API
   - IP-based automatic location detection
   - 5-point radius weather analysis
   - Current temperature, wind speed, and precipitation tracking
 
-- 🚨 **Disaster Alert System**
+- [ALERTS] Disaster Alert System
   - Heat wave detection (>40°C)
   - Storm warnings (>20 km/h wind)
   - Flood alerts (>10mm precipitation)
   - Real-time notification display
 
-- 🖥️ **User Interface**
+- [INTERFACE] User Interface
   - Landing page with project information
   - Authentication pages (login/signup)
   - Responsive dashboard
@@ -52,7 +52,7 @@
 
 ---
 
-## 🔄 Git Commit History
+## Git Commit History
 
 ### Commit Timeline
 
@@ -183,7 +183,7 @@ Project Root
 
 ---
 
-## 🔍 View Detailed Git History
+## View Detailed Git History
 
 To see full commit history on your local machine:
 
@@ -215,7 +215,7 @@ git show <commit-hash>
 
 ---
 
-## 🔄 Comparison with Version 2.0
+## Comparison with Version 2.0
 
 ### What's Different in v2.0 (Latest)
 
@@ -256,7 +256,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📝 Changelog
+## Changelog
 
 ### v1.0.0 - March 2026
 
@@ -300,7 +300,7 @@ Save India v1.0 provides essential features for weather monitoring and disaster 
 
 ---
 
-## 📌 Version Tagging
+## Version Tagging
 
 To see git tags (versions):
 
@@ -320,7 +320,7 @@ git show v1.0
 
 ---
 
-## 🔐 Security Advisories
+## Security Advisories
 
 ### v1.0 Security Notice
 
@@ -347,7 +347,7 @@ This version (1.0) has known security limitations:
 
 ---
 
-## 📚 Documentation References
+## Documentation References
 
 Related documentation:
 - [README.md](README.md) - Full project documentation
@@ -358,7 +358,7 @@ Related documentation:
 
 ---
 
-## 🎯 Version Roadmap
+## Version Roadmap
 
 ```
 v1.0 (Current) ───────► v2.0 (Main) ───────► v3.0 (Planned)
@@ -373,7 +373,7 @@ Status: Stable        Status: Latest      Status: In Development
 
 ---
 
-## 💼 Branch Information
+## Branch Information
 
 ### Current Branch: `ayaan-v1.0`
 - **Status:** Stable / Historical
@@ -403,7 +403,7 @@ git log --graph --oneline --all
 
 ---
 
-## 📞 Support & Updates
+## Support & Updates
 
 - For v1.0 issues: Check this branch history
 - For latest features: Switch to `main` branch (v2.0)

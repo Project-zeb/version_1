@@ -1,10 +1,10 @@
-# 🚀 Quick Deploy Commands - Save India v1.0
+# Quick Deploy Commands - Save India v1.0
 
-Follow these commands exactly to deploy v1.0 to the `ayaan-v1.0` branch.
+Follow these commands exactly to deploy v1.0 to the `Ayaan-v1.0` branch.
 
 ---
 
-## ⚡ QUICKSTART (Copy & Paste)
+## QUICKSTART (Copy & Paste)
 
 ### For Windows (Command Prompt or PowerShell):
 ```bash
@@ -27,7 +27,7 @@ chmod +x deploy_v1.0.sh
 
 ---
 
-## 📋 Manual Deployment (If Scripts Don't Work)
+## Manual Deployment (If Scripts Don't Work)
 
 ### Step 1: Navigate to Project
 ```bash
@@ -134,7 +134,7 @@ https://github.com/yourusername/Project-Zeb/tree/ayaan-v1.0
 
 ---
 
-## 🔍 Verification Commands After Push
+## Verification Commands After Push
 
 Run these to verify everything is correct:
 
@@ -164,7 +164,7 @@ git diff origin/ayaan-v1.0..HEAD
 
 ---
 
-## 📦 Files That Should Be Committed
+## Files That Should Be Committed
 
 After push, verify these files are on GitHub (under ayaan-v1.0 branch):
 
@@ -200,7 +200,7 @@ After push, verify these files are on GitHub (under ayaan-v1.0 branch):
 
 ---
 
-## 🐛 If Something Goes Wrong
+## If Something Goes Wrong
 
 ### Command Fails with "not a valid git repository"
 ```bash
@@ -244,7 +244,7 @@ git reset --hard HEAD~1
 
 ---
 
-## 📊 Complete File List
+## Complete File List
 
 ### Python & Configuration Files
 - `app.py` - Main Flask application (190 lines)
@@ -278,7 +278,7 @@ git reset --hard HEAD~1
 
 ---
 
-## ✅ Success Checklist
+## Success Checklist
 
 After running the deployment commands:
 
@@ -293,7 +293,7 @@ After running the deployment commands:
 
 ---
 
-## 🎯 Next Steps After Deployment
+## Next Steps After Deployment
 
 1. **Share the branch:**
    ```
@@ -321,7 +321,7 @@ After running the deployment commands:
 
 ---
 
-## 🔗 Useful Links
+## Useful Links
 
 - **Repository:** https://github.com/yourusername/Project-Zeb
 - **v1.0 Branch:** https://github.com/yourusername/Project-Zeb/tree/ayaan-v1.0
@@ -349,4 +349,4 @@ That's it! Your v1.0 is now live on the `ayaan-v1.0` branch.
 **Status:** Ready for Deployment  
 **Date:** March 2026  
 **Version:** 1.0 Final  
-**Branch:** ayaan-v1.0
+**Branch:** Ayaan-v1.0
