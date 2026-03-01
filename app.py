@@ -5,7 +5,7 @@ import os
 import json
 import math
 import secrets
-import requests # api will be called using this libraray
+import requests
 import bcrypt
 
 
@@ -29,9 +29,9 @@ try:
     cursor = conn.cursor()
    
 except mysql.connector.Error as err:
-     print("❌ Connection failed:", err)
+     print("Connection failed:", err)
 
-app=Flask(__name__) #create name of Flask app which is name here
+app = Flask(__name__)
 
 # Initialize database tables
 def init_database():
@@ -59,9 +59,9 @@ def init_database():
         """
         cursor.execute(create_disasters_table)
         conn.commit()
-        print("✅ Disasters table created successfully with correct schema")
+        print("Disasters table created successfully")
     except mysql.connector.Error as err:
-        print(f"❌ Error creating Disasters table: {err}")
+        print(f"Error creating Disasters table: {err}")
 
 # Initialize database on startup
 init_database()
@@ -69,8 +69,7 @@ init_database()
 app.secret_key = os.getenv('SECRET_KEY')
 
 
-# this will be used in forecasting open meteor api
-
+# Fetch weather data from Open-Meteo API
 def fetch_weather(lat, lon):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
     response = requests.get(url)
@@ -91,8 +90,7 @@ def generate_radius_points(lat, lon, radius_km=100):
     ]
 
 # this will be used to get location of the user from the ip address using ip api
-
-def get_location_by_ip():
+Get user location from IP addressdef get_location_by_ip():
     # In local development, '127.0.0.1' won't work. 
     # We use an external service to get the public IP or a test IP.
     try:
@@ -120,68 +118,53 @@ def load_ngo_contacts():
 
 @app.route("/") #the route made for the port 5000
 def index():
-   if 'username' in session:
+   if 'username
       return redirect(url_for('home'))
    return render_template("index.html")
 
 
 
-@app.route("/login",methods=['GET','POST'])
-
- #route for the port 5000/login
-# there are two http methods-> get and post 
-# here we need to take the input in the login form from user so the method is POST 
-# by default if not mentioned route takes GET method 
-# GET method is used to fetch and show data to user
-
-
+@app.route("/login", methods=['GET', 'POST'])
 def login():
-   # this method checks user credentials and redirects them to home or login
- msg='' 
- if request.method=='POST':
-      username=request.form['username']
-      password=request.form['password']
-      
-    #   # When a user signs up:
-    #   password = password.encode('utf-8')
-    #   hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-    #   for encryption
+   msg = ''
+   if request.method == 'POST':
+      username = request.form['username']
+      password = request.form['password']
 
-      cursor.execute("select * from users where username=%s and password_hash=%s",(username,password))
-      record=cursor.fetchone()
-      if(record):
-         session['logged_in']=True
-         session['username']=username
-        #  or session['username']=record[1]
-         session['user_id']=record[0]
-         session['role']=record[8]  # Store role from database (index 8)
-         if(record[4]==True):
-            msg='Your account is blocked. Contact support.'
+      cursor.execute("SELECT * FROM users WHERE username = %s AND password_hash = %s", (username, password))
+      record = cursor.fetchone()
+      if record:
+         session['logged_in'] = True
+         session['username'] = username
+         session['user_id'] = record[0]
+         session['role'] = record[8]
+         if record[4] == True:
+            msg = 'Your account is blocked. Contact support.'
             session.clear()
 
          return redirect(url_for('home'))
       else:
-       msg='Wrong Credentials, Try Again.'
+         msg = 'Wrong Credentials, Try Again.'
 
  return render_template("login.html",msg=msg)
 
 
-@app.route("/home") 
+@app.route("/home")
 def home():
    if 'user_id' not in session:
       return redirect(url_for('login'))
-   if session.get('role') == 'ADMIN':  
-      return render_template("admin.html",username=session.get('username'))
-   return render_template("index.html",username=session.get('username'))
+   if session.get('role') == 'ADMIN':
+      return render_template("admin.html", username=session.get('username'))
+   return render_template("index.html", username=session.get('username'))
 
 
 @app.route("/logout")
 def logout():
- session.pop('logged_in',None)
- session.pop('user_id',None)
- session.pop('username',None)
- session.pop('role',None)
- return redirect(url_for('index'))
+   session.pop('logged_in', None)
+   session.pop('user_id', None)
+   session.pop('username', None)
+   session.pop('role', None)
+   return redirect(url_for('index'))
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
@@ -190,19 +173,9 @@ def signup():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        name=request.form['name']
-        role=request.form.get('role', 'USER').upper()  # Convert to uppercase
-        phone=request.form.get('phone') 
-        
-
-        # User_id int auto_increment primary key,
-        # Username varchar(30) unique not null,
-        # email_id varchar(30) unique not null,
-        # phone VARCHAR(10) NOT NULL,
-        # is_blocked BOOLEAN DEFAULT FALSE,
-        # created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        # password_hash VARCHAR(255) NOT NULL,
-        # role ENUM('ADMIN', 'USER') DEFAULT 'USER',
+        name = request.form['name']
+        role = request.form.get('role', 'USER').upper()
+        phone = request.form.get('phone')
 
         if len(password) < 8:
             msg = "Password must be at least 8 characters."
@@ -229,34 +202,30 @@ def signup():
 
 @app.route('/weather-grid', methods=['GET'])
 def get_weather_grid():
-   
     lat, lon = get_location_by_ip()
     
     if lat and lon:
-       
         points = generate_radius_points(lat, lon)
-        msg=[]
+        msg = []
         results = []
         for p_lat, p_lon in points:
             weather_data = fetch_weather(p_lat, p_lon)
-            # Extract only temperature, windspeed, and precipitation from Open-Meteo API
             current = weather_data.get('current_weather', {})
             results.append({
-                "coords": [p_lat, p_lon],                
+                "coords": [p_lat, p_lon],
                 "temperature": current.get('temperature'),
                 "windspeed": current.get('windspeed'),
                 "precipitation": current.get('precipitation', 0)
             })
-        # results[0]['temperature']=80 test case for heat wave alert
-        if results[0]['temperature']>40:
-            msg.append("Heat wave alert.")
-        if results[0]['windspeed']>20:
-                msg.append("Storm alert.")
-        if results[0]['precipitation']>10:
-            msg.append("Flood alert.") 
-            
         
-        return render_template("weather.html", temperature=results[0]['temperature'], windspeed=results[0]['windspeed'], precipitation=results[0]['precipitation'], grid_data=results,msg=msg)
+        if results[0]['temperature'] > 40:
+            msg.append("Heat wave alert.")
+        if results[0]['windspeed'] > 20:
+            msg.append("Storm alert.")
+        if results[0]['precipitation'] > 10:
+            msg.append("Flood alert.")
+        
+        return render_template("weather.html", temperature=results[0]['temperature'], windspeed=results[0]['windspeed'], precipitation=results[0]['precipitation'], grid_data=results, msg=msg)
     else:
         return render_template("weather.html", msg="Could not detect location.")
 
@@ -266,18 +235,15 @@ def get_nearby_ngos():
 
 @app.route('/api/live-ngos')
 def live_ngos():
-    # Load contact database
     ngo_contacts_db = load_ngo_contacts()
     
-    # 1. Grab coordinates from the frontend request
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
-    radius = 50000  # 50km search radius
+    radius = 50000
 
     if not lat or not lon:
         return jsonify({"error": "Missing coordinates"}), 400
 
-    # 2. Formulate the Overpass API query
     overpass_url = "http://overpass-api.de/api/interpreter"
     query = f"""
     [out:json];
@@ -290,17 +256,13 @@ def live_ngos():
     """
 
     try:
-        # 3. Fetch data from OpenStreetMap
         response = requests.post(overpass_url, data={'data': query})
         data = response.json()
 
-        # 4. Clean up the messy OSM data and merge with contact info
         ngos = []
         for element in data.get('elements', []):
             tags = element.get('tags', {})
             ngo_name = tags.get('name', 'Unnamed Relief Facility')
-            
-            # Try to find contact info in our database
             contact_info = ngo_contacts_db.get(ngo_name, {})
             
             ngo_entry = {
@@ -314,14 +276,12 @@ def live_ngos():
             }
             ngos.append(ngo_entry)
         
-        # If no NGOs found from OSM, return NGOs from our contact database
         if not ngos:
             for name, ngo_info in ngo_contacts_db.items():
-                # Add dummy coordinates if not found in OSM
                 ngos.append({
                     "name": name,
                     "type": ngo_info.get('type', 'NGO'),
-                    "lat": lat,  # Use user's location
+                    "lat": lat,
                     "lon": lon,
                     "phone": ngo_info.get('phone', 'Not available'),
                     "email": ngo_info.get('email', 'Not available'),
@@ -344,33 +304,24 @@ def contact_request():
         
         # Load existing inquiries or create new list
         try:
+    try:
+        inquiry_data = request.json
+        inquiries_file = 'ngo_inquiries.json'
+        
+        try:
             with open(inquiries_file, 'r') as f:
                 inquiries = json.load(f)
         except FileNotFoundError:
             inquiries = []
         
-        # Add new inquiry
         inquiries.append(inquiry_data)
         
-        # Save back to file
         with open(inquiries_file, 'w') as f:
             json.dump(inquiries, f, indent=2)
         
-        # You could also send email here or integrate with WhatsApp API
-        # For now, just save it
-        
         return jsonify({
             "success": True,
-            "message": "Your inquiry has been recorded. The NGO will contact you soon."
-        }), 200
-        
-    except Exception as e:
-        return jsonify({"error": f"Failed to process request: {str(e)}"}), 500
-
-@app.route('/get-all-users', methods=['GET'])
-def get_all_users():
-    """Get all users for admin dashboard"""
-    if 'user_id' not in session or session.get('role') != 'ADMIN':
+            "message": "Inquiry recorded successfully
         return jsonify({"success": False, "message": "Unauthorized"}), 401
     
     try:
@@ -544,4 +495,5 @@ def report_disaster():
         return render_template('report_disaster.html', username=session.get('username'), msg=str(e), msg_type='error')
     
 if(__name__=="__main__"):
-  app.run(debug=True,port='8000')
+  app.run(debug=True,port='8000') __name__ == "__main__":
+    app.run(debug=True, 
