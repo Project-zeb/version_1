@@ -154,7 +154,7 @@ Changes:
 
 ---
 
-## 📊 Version Statistics
+## [STATISTICS] Version Statistics
 
 ### Code Metrics
 - **Total Python Files:** 1 (app.py - 190 lines)
@@ -273,12 +273,12 @@ pip install -r requirements.txt
 - [YES] Comprehensive documentation
 
 **Known Limitations:**
-- ⚠️ Passwords stored as plaintext (security concern)
-- ⚠️ No CSRF protection on forms
-- ⚠️ No rate limiting on login attempts
-- ⚠️ Limited error logging
-- ⚠️ Single database connection
-- ⚠️ No session timeout feature
+- [ALERT] Passwords stored as plaintext (security concern)
+- [ALERT] No CSRF protection on forms
+- [ALERT] No rate limiting on login attempts
+- [ALERT] Limited error logging
+- [ALERT] Single database connection
+- [ALERT] No session timeout feature
 
 **Fixes in Later Versions:**
 - All security issues addressed in v2.0
@@ -288,7 +288,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Release Notes Template
+## [RELEASE] Release Notes Template
 
 ### For Developers
 This version serves as a solid foundation for disaster management features. All core functionalities are working as expected. The codebase is clean, well-documented, and ready for deployment.
@@ -296,7 +296,7 @@ This version serves as a solid foundation for disaster management features. All 
 ### For Users
 Save India v1.0 provides essential features for weather monitoring and disaster alerts. You can register, login, and receive real-time weather notifications for your location. 
 
-**⚠️ Important:** For production use, we recommend upgrading to v2.0 which includes important security enhancements.
+**[ALERT] Important:** For production use, we recommend upgrading to v2.0 which includes important security enhancements.
 
 ---
 
@@ -326,17 +326,17 @@ git show v1.0
 
 This version (1.0) has known security limitations:
 
-1. **Password Storage** ⚠️
+1. **Password Storage** [ALERT]
    - Passwords are stored in plaintext
    - Not suitable for production
    - Use v2.0+ for encrypted storage
 
-2. **Form Security** ⚠️
+2. **Form Security** [ALERT]
    - No CSRF token protection
    - No rate limiting
    - Bruteforce attacks possible
 
-3. **Database** ⚠️
+3. **Database** [ALERT]
    - Single connection (production concern)
    - No connection pooling
    - Missing indexes on some queries

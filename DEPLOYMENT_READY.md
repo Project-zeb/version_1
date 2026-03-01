@@ -140,7 +140,7 @@ If you prefer visual Git tools (GitHub Desktop, SourceTree, GitKraken):
 
 ---
 
-## ⚠️ CRITICAL BEFORE PUSHING
+## [ALERT] CRITICAL BEFORE PUSHING
 
 ### Verification Checklist:
 
@@ -171,7 +171,7 @@ grep "^\.env" .gitignore
 
 ---
 
-## ✨ WHAT HAPPENS AFTER YOU PUSH
+## [INFO] WHAT HAPPENS AFTER YOU PUSH
 
 ### Immediate (GitHub):
 [CREATED] New branch `ayaan-v1.0` will appear
@@ -190,7 +190,7 @@ git checkout ayaan-v1.0
 
 ---
 
-## 📊 FILES BY CATEGORY
+## [FILES] FILES BY CATEGORY
 
 ### Application Files (Must Have):
 - [DONE] `app.py` - Main application
@@ -224,7 +224,7 @@ git checkout ayaan-v1.0
 
 ---
 
-## 🔍 FINAL FILE COUNT
+## [COUNT] FINAL FILE COUNT
 
 ```
 Total Files to be Committed: 17+
@@ -240,7 +240,7 @@ Total Files to be Committed: 17+
 
 ---
 
-## 📝 COMMIT MESSAGE TEMPLATE
+## [TEMPLATE] COMMIT MESSAGE TEMPLATE
 
 When you commit, use this message:
 
@@ -280,7 +280,7 @@ After pushing, you should see:
 
 ---
 
-## 📞 QUICK REFERENCE
+## [REFERENCE] QUICK REFERENCE
 
 ### Current Branch Status:
 ```bash
@@ -304,7 +304,7 @@ git status
 
 ---
 
-## 🎯 NEXT STEPS (AFTER PUSHING)
+## [STEPS] NEXT STEPS (AFTER PUSHING)
 
 1. **Verify on GitHub:**
    ```
@@ -339,7 +339,7 @@ git status
 
 ---
 
-## ⚡ COMMAND SUMMARY
+## [COMMANDS] COMMAND SUMMARY
 
 ```bash
 # ONE-LINE DEPLOYMENT (for experts):
@@ -353,7 +353,7 @@ git status
 
 ---
 
-## 📍 LOCATION & PATHS
+## [LOCATION] LOCATION & PATHS
 
 **Project Location:**
 ```
@@ -389,7 +389,7 @@ Before clicking deploy/push button:
 
 ---
 
-## 🎬 ACTION REQUIRED
+## [ACTION] ACTION REQUIRED
 
 Choose one of these and execute:
 
@@ -416,7 +416,7 @@ Push to origin
 
 ---
 
-## 🚀 YOU ARE READY TO DEPLOY!
+## [DEPLOY] YOU ARE READY TO DEPLOY!
 
 **All preparations are complete.**  
 **All documentation is prepared.**  

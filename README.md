@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS users (
 | `id` | INT | Primary key, auto-incrementing |
 | `username` | VARCHAR(50) | Unique username |
 | `email` | VARCHAR(100) | Unique email address |
-| `password` | VARCHAR(255) | Password (⚠️ stored as plaintext in v1.0) |
+| `password` | VARCHAR(255) | Password (stored as plaintext in v1.0 - see security notes) |
 | `name` | VARCHAR(100) | User's full name |
 | `created_at` | TIMESTAMP | Account creation timestamp |
 

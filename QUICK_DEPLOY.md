@@ -331,7 +331,7 @@ After running the deployment commands:
 
 ---
 
-## 📝 Deployment Commands Summary
+## [COMMANDS] Deployment Commands Summary
 
 ```bash
 # The absolute minimum to deploy (for experienced users):
