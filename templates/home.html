@@ -3,18 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dashboard | Save India</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(to br, #indigo-50, #blue-100);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            color: #666;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        a {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 24px;
+            background-color: #4F46E5;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        a:hover {
+            background-color: #4338CA;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello home
-    </h1>
-    <div>
-        <a
-          href="{{ url_for('get_weather_grid') }}"
-          class="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-medium shadow-md hover:bg-indigo-700 transition"
-        >
-            Get weather data
-        </a>
-      </div>
+    <div class="container">
+        <h1>Welcome, {{ username }}!</h1>
+        <p>Explore weather data and disaster management features</p>
+        <div class="button-group">
+            <a href="{{ url_for('get_weather_grid') }}">Get Weather Data</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
 </body>
 </html>
