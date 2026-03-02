@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Disaster Guard • Home Mobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js" defer></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+    <style>
+        :root { --bg:#edf3f9; --phone:#f9f4f5; --text:#16253b; --muted:#7c8ea9; --line:#e8dcdf; --blue:#2f86ff; --green:#2dc98c; --orange:#ffb347; --red:#ff6b63; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Inter,sans-serif; background:linear-gradient(180deg,#eaf1f8,#f4f7fc); min-height:100vh; display:grid; place-items:center; padding:20px 12px; color:var(--text); }
+        body.map-fs-open { overflow:hidden; }
+        .phone { width:min(100%,392px); height:min(840px,95vh); border-radius:34px; border:1px solid #d8e3ef; background:var(--phone); box-shadow:0 22px 50px rgba(96,126,163,.25); overflow:hidden; position:relative; }
+        .status-notch { height:28px; display:flex; justify-content:center; align-items:center; }
+        .notch { width:120px; height:28px; border-radius:0 0 16px 16px; background:#ebe3e5; }
+        .app { height:calc(100% - 100px); overflow:auto; padding:14px 14px 90px; display:grid; gap:12px; }
+        .topbar { display:flex; justify-content:space-between; align-items:start; gap:8px; }
+        .location small { display:block; color:var(--muted); font-size:.72rem; font-weight:600; }
+        .location strong { font-size:.95rem; }
+        .region-trigger {
+            margin-top:3px;
+            width:220px;
+            border:none;
+            background:transparent;
+            border-radius:8px;
+            font-size:.85rem;
+            color:#677186;
+            padding:4px 0;
+            font-weight:600;
+            text-align:left;
+            cursor:pointer;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .region-trigger:focus {
+            outline:none;
+            box-shadow:0 0 0 2px rgba(240,94,103,.12);
+        }
+
+        .caret {
+            color:#2e3340;
+            font-size:.75rem;
+            margin-top:1px;
+        }
+        .icons { display:flex; gap:8px; }
+        .circle { width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:#fff; display:grid; place-items:center; color:#5b6f8e; font-size:.88rem; }
+        .icon-svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+        .circle .icon-svg { width:16px; height:16px; }
+        .circle.refresh-cta.spinning .icon-svg { animation:refreshSpin .7s linear; }
+        @keyframes refreshSpin {
+            from { transform:rotate(0deg); }
+            to { transform:rotate(360deg); }
+        }
+        .search { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#fff; }
+        .search input { border:none; outline:none; width:100%; background:transparent; color:#3d5272; font-size:.86rem; }
+        .title { font-size:.86rem; font-weight:700; color:#405a7f; display:flex; justify-content:space-between; align-items:center; }
+        .live-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 4px rgba(45,201,140,.2); display:inline-block; margin-right:6px; }
+        .alerts { display:grid; gap:10px; }
+        .card { border-radius:16px; padding:11px; border:1px solid transparent; display:grid; gap:8px; }
+        .low { background:#eaf2ff; border-color:#cfe0ff; }
+        .medium { background:#fff3e2; border-color:#f9d8aa; }
+        .high { background:#ffe8e6; border-color:#ffc5c1; }
+        .head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .head h3 { font-size:.94rem; }
+        .tag { border-radius:999px; font-size:.66rem; font-weight:700; padding:3px 8px; }
+        .tag.low { background:#deebff; color:#1e5fb3; }
+        .tag.medium { background:#ffe8c2; color:#915b0f; }
+        .tag.high { background:#ffd6d4; color:#a5352d; }
+        .meta { display:flex; flex-wrap:wrap; gap:10px; font-size:.72rem; color:#5b7395; font-weight:600; }
+        .actions { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+        .mini { border:1px solid rgba(26,61,111,.14); background:rgba(255,255,255,.7); border-radius:8px; padding:6px 0; text-align:center; font-size:.68rem; color:#36557d; font-weight:600; cursor:pointer; appearance:none; -webkit-appearance:none; }
+        .mini:active { transform:scale(.985); }
+        .map { border-radius:16px; border:1px solid #d2e4f9; background:#edf6ff; height:250px; position:relative; overflow:hidden; }
+        .map-live { width:100%; height:100%; }
+        .leaflet-container,
+        .leaflet-control-container,
+        .leaflet-pane {
+            z-index: 1;
+        }
+        .map-status {
+            position:absolute;
+            right:10px;
+            bottom:10px;
+            z-index:2;
+            border:1px solid #d6e6f8;
+            border-radius:999px;
+            background:rgba(255,255,255,.92);
+            color:#305683;
+            font-size:.64rem;
+            font-weight:700;
+            padding:3px 8px;
+            max-width:52%;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+        .badge { position:absolute; top:10px; left:10px; background:rgba(255,255,255,.86); border:1px solid #d6e6f8; border-radius:999px; padding:4px 8px; font-size:.68rem; font-weight:700; color:#335781; }
+        .map-fs-btn {
+            position:absolute;
+            top:10px;
+            right:10px;
+            z-index:3;
+            border:1px solid #d6e6f8;
+            border-radius:10px;
+            background:rgba(255,255,255,.92);
+            color:#2e527d;
+            font-size:.9rem;
+            font-weight:800;
+            width:32px;
+            height:32px;
+            display:grid;
+            place-items:center;
+            cursor:pointer;
+        }
+        .map:fullscreen,
+        .map:-webkit-full-screen {
+            width:100vw;
+            height:100dvh;
+            border-radius:0;
+            border:none;
+            margin:0;
+            background:#edf6ff;
+        }
+        .map:fullscreen .map-live,
+        .map:-webkit-full-screen .map-live {
+            height:100%;
+        }
+        .map.fullscreen-fallback {
+            position:fixed;
+            inset:0;
+            width:100vw;
+            height:100dvh;
+            border-radius:0;
+            border:none;
+            margin:0;
+            z-index:2200;
+            background:#edf6ff;
+        }
+        .map.fullscreen-fallback .map-live {
+            height:100%;
+        }
+        .stats { border-radius:16px; border:1px solid var(--line); background:#fff; padding:10px; display:grid; gap:8px; }
+        .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+        .stat { border-radius:10px; background:#f5f9ff; border:1px solid #dfebf9; padding:8px; text-align:center; min-height:82px; display:grid; grid-template-rows:auto 1fr; }
+        .stat small { color:#6684aa; font-size:.67rem; display:block; margin-bottom:4px; font-weight:600; }
+        .stat strong { color:#1f4779; font-size:1.08rem; font-variant-numeric:tabular-nums; display:flex; align-items:center; justify-content:center; min-height:2.2em; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .stat strong[data-suffix] { font-size:.88rem; white-space:normal; overflow:visible; text-overflow:clip; line-height:1.05; text-align:center; }
+        .sos { border:none; border-radius:12px; padding:11px 14px; width:100%; color:#fff; background:linear-gradient(135deg,#ff6f66,#ff4f58); font-weight:800; letter-spacing:.2px; }
+        .nav { position:absolute; left:0; right:0; bottom:0; height:72px; background:rgba(255,255,255,.92); border-top:1px solid #dbe7f5; display:grid; grid-template-columns:repeat(3,1fr); padding:8px 10px 12px; }
+        .nav a, .nav button { text-decoration:none; color:#6986ac; display:grid; place-items:center; gap:0; font-size:.66rem; font-weight:700; border:none; background:transparent; }
+        .nav .icon-svg { width:20px; height:20px; }
+        .nav a.active { color:var(--blue); }
+        .menu-nav { color:#4f6f9b !important; font-weight:800 !important; }
+        .menu-nav .icon-svg {
+            transition:transform .35s cubic-bezier(.22,1,.36,1), color .22s ease;
+            transform-origin:center;
+        }
+        .menu-nav.open .icon-svg {
+            transform:rotate(180deg) scale(1.08);
+            color:#ff6f66;
+        }
+        .nav-menu {
+            position:absolute;
+            right:10px;
+            bottom:82px;
+            width:192px;
+            border:1px solid #cfdeef;
+            border-radius:18px 18px 18px 28px;
+            background:linear-gradient(165deg,#f9fcff,#edf4fd);
+            box-shadow:0 14px 26px rgba(79,110,146,.24);
+            z-index:90;
+            display:grid;
+            gap:8px;
+            padding:10px 10px 10px 14px;
+            opacity:0;
+            visibility:hidden;
+            pointer-events:none;
+            transform:translateY(10px) scale(.96);
+            transform-origin:bottom right;
+            transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .22s ease, visibility 0s linear .28s;
+        }
+        .nav-menu.show {
+            opacity:1;
+            visibility:visible;
+            pointer-events:auto;
+            transform:translateY(0) scale(1);
+            transition-delay:0s;
+        }
+        .nav-menu::before {
+            content:"";
+            position:absolute;
+            inset:0;
+            border-radius:inherit;
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+            pointer-events:none;
+        }
+        .nav-menu a {
+            text-decoration:none;
+            color:#365a86;
+            font-size:.88rem;
+            font-weight:700;
+            letter-spacing:.01em;
+            padding:9px 10px;
+            border:1px solid #cddff2;
+            border-radius:11px;
+            background:#f1f7ff;
+            opacity:0;
+            transform:translateX(10px);
+            transition:color .2s ease, background .2s ease, border-color .2s ease, opacity .22s ease, transform .26s cubic-bezier(.22,1,.36,1);
+        }
+        .nav-menu.show a { opacity:1; transform:translateX(0); }
+        .nav-menu.show a:nth-child(1) { transition-delay:.04s; }
+        .nav-menu.show a:nth-child(2) { transition-delay:.08s; }
+        .nav-menu.show a:nth-child(3) { transition-delay:.12s; }
+        .nav-menu.show a:nth-child(4) { transition-delay:.16s; }
+        .nav-menu a.active {
+            color:#fff;
+            border-color:#5f84b5;
+            background:linear-gradient(135deg,#6f97c8,#5a80b0);
+        }
+        .nav-menu a:hover {
+            color:#2f527d;
+            border-color:#b8cfe8;
+            background:#e5effb;
+        }
+        .sos-nav { color:#c23d46 !important; font-weight:800 !important; }
+        .sos-core {
+            width:44px;
+            height:44px;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:linear-gradient(135deg,#ff6f66,#ff4f58);
+            color:#fff;
+            box-shadow:0 8px 14px rgba(255,91,97,.28);
+            font-size:.78rem;
+            letter-spacing:.3px;
+            position:relative;
+            animation:sosBeat 1.5s ease-in-out infinite;
+        }
+        .sos-core::after {
+            content:"";
+            position:absolute;
+            inset:-6px;
+            border-radius:50%;
+            border:2px solid rgba(255,95,102,.32);
+            animation:sosRing 1.5s ease-out infinite;
+        }
+        @keyframes sosBeat {
+            0%, 100% { transform:scale(1); }
+            45% { transform:scale(1.09); }
+        }
+        @keyframes sosRing {
+            0% { transform:scale(.92); opacity:.7; }
+            100% { transform:scale(1.22); opacity:0; }
+        }
+        .sos-popup {
+            position:absolute;
+            left:50%;
+            transform:translateX(-50%);
+            bottom:84px;
+            border:1px solid #ffc6c2;
+            background:#fff3f2;
+            color:#a53f45;
+            border-radius:11px;
+            font-size:.74rem;
+            font-weight:700;
+            padding:8px 11px;
+            display:none;
+            z-index:7;
+            white-space:nowrap;
+            box-shadow:0 10px 20px rgba(196,95,101,.2);
+        }
+        .sos-popup.show { display:block; }
+
+        .location-sheet {
+            position:absolute;
+            inset:0;
+            background:rgba(15,29,52,.34);
+            z-index:1500;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            padding:14px;
+        }
+
+        .location-sheet.show { display:flex; }
+
+        .location-modal {
+            width:100%;
+            max-width:332px;
+            background:#fff;
+            border:1px solid #e8dfe2;
+            border-radius:14px;
+            overflow:hidden;
+            box-shadow:0 16px 28px rgba(68,61,73,.25);
+            position:relative;
+            z-index:1501;
+        }
+
+        .loc-head {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:12px 14px;
+            border-bottom:1px solid #efe6e9;
+        }
+
+        .loc-head h3 {
+            font-size:1.04rem;
+            color:#2f2f36;
+        }
+
+        .loc-close {
+            border:none;
+            background:#f5edf0;
+            color:#8e7f88;
+            width:24px;
+            height:24px;
+            border-radius:50%;
+            font-weight:800;
+            cursor:pointer;
+        }
+
+        .loc-body { padding:12px; display:grid; gap:10px; }
+
+        .loc-search {
+            border:1px solid #eadfe3;
+            border-radius:10px;
+            padding:10px 11px;
+            font-size:.84rem;
+            color:#39475c;
+            outline:none;
+        }
+
+        .loc-search:focus {
+            border-color:#ef9ea5;
+            box-shadow:0 0 0 2px rgba(240,94,103,.12);
+        }
+
+        .state-list {
+            display:grid;
+            gap:7px;
+            max-height:176px;
+            overflow:auto;
+            padding-right:2px;
+        }
+
+        .state-item {
+            width:100%;
+            border:1px solid #ebe2e6;
+            background:#fff;
+            color:#4c5363;
+            border-radius:9px;
+            padding:9px 10px;
+            text-align:left;
+            font-size:.82rem;
+            font-weight:700;
+            cursor:pointer;
+        }
+
+        .state-item:hover {
+            border-color:#f1b9c0;
+            background:#fff6f7;
+            color:#d44f62;
+        }
+
+        .loc-current {
+            border:1px solid #f0e6ea;
+            border-radius:12px;
+            background:#fff;
+            padding:12px;
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            align-items:center;
+        }
+
+        .loc-copy strong {
+            display:block;
+            color:#f05e67;
+            font-size:.95rem;
+            margin-bottom:2px;
+        }
+
+        .loc-copy small {
+            color:#8c8590;
+            font-size:.73rem;
+            font-weight:600;
+            line-height:1.4;
+        }
+
+        .loc-enable {
+            border:1px solid #f3c7cd;
+            background:#fff5f6;
+            color:#e45361;
+            border-radius:8px;
+            font-size:.76rem;
+            font-weight:800;
+            padding:7px 10px;
+            cursor:pointer;
+            white-space:nowrap;
+        }
+
+
+        .profile-sheet {
+            position:absolute;
+            inset:0;
+            background:rgba(15,29,52,.3);
+            display:none;
+            align-items:flex-end;
+            z-index:10;
+        }
+
+        .profile-sheet.show { display:flex; }
+
+        .profile-card {
+            width:100%;
+            background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+            border-radius:20px 20px 0 0;
+            border-top:1px solid #d5e3f5;
+            padding:16px 14px 14px;
+            display:grid;
+            gap:12px;
+            box-shadow:0 -14px 28px rgba(52,79,120,.16);
+        }
+
+        .profile-head {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+        }
+
+        .profile-head h3 {
+            font-size:1.02rem;
+            color:#23436d;
+            letter-spacing:.1px;
+        }
+
+        .profile-subtitle {
+            margin-top:-8px;
+            color:#6784aa;
+            font-size:.74rem;
+            font-weight:600;
+        }
+
+        .close-btn {
+            border:1px solid #d7e4f6;
+            background:#f5f9ff;
+            border-radius:8px;
+            padding:3px 8px;
+            color:#4b688f;
+            font-weight:700;
+            font-size:.76rem;
+            cursor:pointer;
+        }
+
+        .profile-row {
+            display:flex;
+            justify-content:space-between;
+            gap:8px;
+            border:1px solid #dce8f8;
+            background:#f5f9ff;
+            border-radius:12px;
+            padding:10px 12px;
+            font-size:.78rem;
+        }
+
+        .profile-row span { color:#5f7da5; font-weight:700; }
+        .profile-row strong { color:#254d7f; max-width:68%; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+        .profile-form {
+            display:grid;
+            gap:9px;
+            margin-top:2px;
+            padding:10px;
+            border:1px solid #dce8f8;
+            border-radius:14px;
+            background:#ffffff;
+        }
+
+        .profile-field {
+            display:grid;
+            gap:4px;
+        }
+
+        .profile-field label {
+            color:#6d86a8;
+            font-size:.72rem;
+            font-weight:700;
+        }
+
+        .profile-input {
+            border:1px solid #d6e5f7;
+            border-radius:11px;
+            padding:10px 11px;
+            font-size:.8rem;
+            color:#2d4f7b;
+            outline:none;
+            background:#fcfeff;
+            transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+
+        .profile-input:focus {
+            border-color:#9fc4f2;
+            box-shadow:0 0 0 2px rgba(84,133,201,.12);
+        }
+
+        .profile-input[readonly] {
+            background:#f3f7fd;
+            color:#5d7ea7;
+            border-color:#dbe7f7;
+        }
+
+        .profile-actions {
+            display:flex;
+            gap:8px;
+            margin-top:4px;
+        }
+
+        .profile-save-btn {
+            border:none;
+            border-radius:12px;
+            padding:10px 12px;
+            background:linear-gradient(135deg,#2f86ff,#1f6fdf);
+            color:#fff;
+            font-size:.82rem;
+            font-weight:800;
+            cursor:pointer;
+            flex:1;
+            box-shadow:0 8px 14px rgba(45,120,215,.22);
+        }
+
+        .profile-save-btn[disabled] {
+            opacity:.52;
+            cursor:not-allowed;
+            box-shadow:none;
+        }
+
+        .profile-edit-btn {
+            border:1px solid #cfe0f5;
+            background:#f1f7ff;
+            border-radius:12px;
+            padding:10px 12px;
+            color:#4b688f;
+            font-size:.82rem;
+            font-weight:800;
+            cursor:pointer;
+        }
+
+        .profile-message {
+            border-radius:11px;
+            font-size:.76rem;
+            font-weight:700;
+            padding:9px 10px;
+        }
+
+        .profile-message.success {
+            background:#e8f8ef;
+            border:1px solid #bfe8cf;
+            color:#25754c;
+        }
+
+        .profile-message.error {
+            background:#fff1f1;
+            border:1px solid #f4c8c8;
+            color:#af3d3d;
+        }
+
+        .login-link-btn {
+            border:none;
+            border-radius:10px;
+            padding:10px 12px;
+            background:linear-gradient(135deg,#ff6f66,#ff4f58);
+            color:#fff;
+            font-size:.82rem;
+            font-weight:800;
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <div class="status-notch"><div class="notch"></div></div>
+        <main class="app">
+            <header class="topbar">
+                <div class="location">
+                    <small>Region</small>
+                    <button id="regionTrigger" class="region-trigger" type="button"><span id="regionLabel">Select Location</span><span class="caret">▾</span></button>
+                </div>
+                <div class="icons">
+                    <button class="circle refresh-cta" id="refreshBtn" type="button" aria-label="Refresh alerts">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3v6h-6"></path><path d="M3 21v-6h6"></path><path d="M20.49 9A9 9 0 0 0 5 5.6L3 7.5"></path><path d="M3.51 15A9 9 0 0 0 19 18.4l2-1.9"></path></svg>
+                    </button>
+                    <button class="circle" id="profileBtn" type="button" aria-label="Profile">
+                        <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        
+                    </button>
+                </div>
+            </header>
+            <div class="search"><span>🔎</span><input type="text" placeholder="Search" /></div>
+            <div class="title"><span><span class="live-dot"></span>Active Alerts</span><span id="alertsUpdatedAt" style="font-size:.73rem;color:#6f88a8;font-weight:600;">Updated now</span></div>
+
+            <section class="alerts" id="alertFeed">
+                <article class="card low">
+                    <div class="head"><h3>Loading live alerts...</h3><span class="tag low">Live</span></div>
+                    <div class="meta"><span>📍 Checking latest sources</span><span>🕒 Updating</span></div>
+                    <div class="actions"><button class="mini" type="button" data-action="share" data-alert-idx="-1">Share</button><button class="mini" type="button" data-action="listen" data-alert-idx="-1">Listen</button></div>
+                </article>
+            </section>
+
+            <section class="map" id="mapPanel">
+                <span class="badge">Rescue nodes tracking active</span>
+                <button id="mapFullscreenBtn" class="map-fs-btn" type="button" aria-label="Fullscreen map">⛶</button>
+                <div id="liveMap" class="map-live" aria-label="Live disaster map"></div>
+                <span id="mapStatus" class="map-status">Loading alerts...</span>
+            </section>
+
+            <section class="stats" id="statsBlock">
+                <div class="title"><span>Last 1-Year Impact (India)</span><span style="font-size:.72rem;color:#6f88a8;font-weight:600;">India data</span></div>
+                <div class="grid">
+                    <div class="stat"><small>Events</small><strong data-target="312">0</strong></div>
+                    <div class="stat"><small>Deaths</small><strong data-target="18940">0</strong></div>
+                    <div class="stat"><small>Loss</small><strong data-target="123000" data-prefix="₹ ~ " data-suffix=" Crores">0</strong></div>
+                </div>
+            </section>
+
+        </main>
+        <nav class="nav">
+            <a href="{{ url_for('mobile_home') }}" class="active" aria-label="Home">
+                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+            </a>
+            <button id="sosNavBtn" class="sos-nav" aria-label="SOS"><span class="sos-core">SOS</span></button>
+            <button id="menuNavBtn" class="menu-nav" aria-label="Menu">
+                <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+            </button>
+        </nav>
+        <div class="nav-menu" id="navMenu">
+            <a href="{{ url_for('mobile_alerts') }}">Alerts</a>
+            <a href="{{ url_for('mobile_analysis') }}">Analysis</a>
+            <a href="{{ url_for('mobile_organization') }}">Organizations</a>
+            <a href="{{ url_for('mobile_satellite') }}">Satellite View</a>
+           <a href="{{ url_for('report_disaster', user_info=user_info) }}">Report</a>
+              {% if is_admin %}
+              <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
+              {% endif %}
+           
+        </div>
+        <div class="sos-popup" id="sosPopup">Emergency details sending...</div>
+
+        <div class="profile-sheet" id="profileSheet">
+            <div class="profile-card">
+                <div class="profile-head">
+                    <h3>Profile Info</h3>
+                    <button class="close-btn" id="closeProfile" type="button">Close</button>
+                </div>
+                <p class="profile-subtitle">Manage your account details</p>
+                           
+                {% if profile_msg %}
+                <div class="profile-message {{ 'success' if profile_msg_type == 'success' else 'error' }}">{{ profile_msg }}</div>
+                {% endif %}
+
+                {% if profile %}
+                <div class="profile-row"><span>Masked ID</span><strong>{{ profile.masked_username or '-' }}</strong></div>
+                <div class="profile-row"><span>Account Type</span><strong>{{ profile.account_type or 'USER' }}</strong></div>
+
+                <form class="profile-form" id="profileForm" method="post" action="{{ url_for('mobile_profile_update') }}">
+                    <div class="profile-field">
+                        <label for="profileFullName">Name</label>
+                        <input class="profile-input" id="profileFullName" name="full_name" type="text" value="{{ profile.full_name or '' }}" readonly />
+                    </div>
+                    <div class="profile-field">
+                        <label for="profileUsername">Username</label>
+                        <input class="profile-input" id="profileUsername" name="username" type="text" value="{{ profile.username or '' }}" readonly required />
+                    </div>
+                    <div class="profile-field">
+                        <label for="profileEmail">Email</label>
+                        <input class="profile-input" id="profileEmail" name="email" type="email" value="{{ profile.email or '' }}" readonly />
+                    </div>
+                    <div class="profile-field">
+                        <label for="profilePhone">Phone</label>
+                        <input class="profile-input" id="profilePhone" name="phone" type="text" value="{{ profile.phone or '' }}" readonly />
+                    </div>
+                    <div class="profile-actions">
+                        <button class="profile-edit-btn" id="profileEditBtn" type="button">Edit</button>
+                        <button class="profile-save-btn" id="profileSaveBtn" type="submit" disabled>Save Changes</button>
+                        <button class="close-btn" id="logoutBtn" type="button">Log Out</button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="profile-row"><span>Status</span><strong>Not logged in</strong></div>
+                <button class="login-link-btn" id="goLogin" type="button">Go to Login</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="location-sheet" id="locationSheet">
+            <div class="location-modal">
+                <div class="loc-head">
+                    <h3>Your Location</h3>
+                    <button class="loc-close" id="closeLocationModal" type="button">×</button>
+                </div>
+                <div class="loc-body">
+                    <input id="locationSearch" class="loc-search" type="text" placeholder="Search a new address" />
+
+                    <div class="state-list" id="stateList"></div>
+
+                    <div class="loc-current">
+                        <div class="loc-copy">
+                            <strong>Use My Current Location</strong>
+                            <small>Enable location service for better accuracy</small>
+                        </div>
+                        <button id="enableCurrentLocation" class="loc-enable" type="button">Enable</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const animateImpactCounters = () => {
+                const IMPACT_ANIMATION_DURATION_MS = 6000;
+                const nodes = Array.from(document.querySelectorAll('[data-target]'));
+                nodes.forEach((el) => {
+                    const target = Number(el.dataset.target);
+                    const decimals = String(target).includes('.') ? 1 : 0;
+                    const prefix = el.dataset.prefix || '';
+                    const suffix = el.dataset.suffix || '';
+
+                    if (window.CountUp && window.CountUp.CountUp) {
+                        const counter = new window.CountUp.CountUp(el, target, {
+                            duration: IMPACT_ANIMATION_DURATION_MS / 1000,
+                            decimalPlaces: decimals,
+                            separator: ',',
+                            useIndianSeparators: true,
+                            prefix,
+                            suffix
+                        });
+                        if (!counter.error) {
+                            counter.start();
+                            return;
+                        }
+                    }
+
+                    const start = 0;
+                    const durationMs = IMPACT_ANIMATION_DURATION_MS;
+                    const startTime = performance.now();
+                    const easeOut = (value) => 1 - Math.pow(1 - value, 3);
+
+                    const frame = (now) => {
+                        const progress = Math.min(1, (now - startTime) / durationMs);
+                        const eased = easeOut(progress);
+                        const current = start + ((target - start) * eased);
+
+                        el.textContent = `${prefix}${current.toLocaleString('en-IN', {
+                            useGrouping: true,
+                            minimumFractionDigits: decimals,
+                            maximumFractionDigits: decimals
+                        })}${suffix}`;
+
+                        if (progress < 1) requestAnimationFrame(frame);
+                    };
+
+                    requestAnimationFrame(frame);
+                });
+            };
+
+            animateImpactCounters();
+
+            const sosBtn = document.getElementById('sosNavBtn');
+            const sosPopup = document.getElementById('sosPopup');
+            const profileBtn = document.getElementById('profileBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const profileSheet = document.getElementById('profileSheet');
+            const closeProfile = document.getElementById('closeProfile');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const profileEditBtn = document.getElementById('profileEditBtn');
+            const profileSaveBtn = document.getElementById('profileSaveBtn');
+            const profileForm = document.getElementById('profileForm');
+            const profileUsername = document.getElementById('profileUsername');
+            const profilePhone = document.getElementById('profilePhone');
+            const goLogin = document.getElementById('goLogin');
+            const regionTrigger = document.getElementById('regionTrigger');
+            const regionLabel = document.getElementById('regionLabel');
+            const alertsUpdatedAt = document.getElementById('alertsUpdatedAt');
+            const alertFeed = document.getElementById('alertFeed');
+            const mapStatus = document.getElementById('mapStatus');
+            const liveMapNode = document.getElementById('liveMap');
+            const mapPanel = document.getElementById('mapPanel');
+            const mapFullscreenBtn = document.getElementById('mapFullscreenBtn');
+            const locationSheet = document.getElementById('locationSheet');
+            const menuNavBtn = document.getElementById('menuNavBtn');
+            const navMenu = document.getElementById('navMenu');
+            const closeLocationModal = document.getElementById('closeLocationModal');
+            const enableCurrentLocation = document.getElementById('enableCurrentLocation');
+            const locationSearch = document.getElementById('locationSearch');
+            const stateList = document.getElementById('stateList');
+            const states = [
+                'India',
+                'Andhra Pradesh',
+                'Arunachal Pradesh',
+                'Assam',
+                'Bihar',
+                'Chhattisgarh',
+                'Goa',
+                'Gujarat',
+                'Haryana',
+                'Himachal Pradesh',
+                'Jharkhand',
+                'Karnataka',
+                'Kerala',
+                'Madhya Pradesh',
+                'Maharashtra',
+                'Manipur',
+                'Meghalaya',
+                'Mizoram',
+                'Nagaland',
+                'Odisha',
+                'Punjab',
+                'Rajasthan',
+                'Sikkim',
+                'Tamil Nadu',
+                'Telangana',
+                'Tripura',
+                'Uttar Pradesh',
+                'Uttarakhand',
+                'West Bengal',
+                'Andaman and Nicobar Islands',
+                'Chandigarh',
+                'Dadra and Nagar Haveli and Daman and Diu',
+                'Delhi',
+                'Jammu and Kashmir',
+                'Ladakh',
+                'Lakshadweep',
+                'Puducherry'
+            ];
+            let liveMap = null;
+            let liveMarkerLayer = null;
+            let currentCoords = null;
+            let pressTimer;
+            let longPressTriggered = false;
+            let latestFeedAlerts = [];
+            const ALERT_MAX_AGE_HOURS = 48;
+            const INDIA_VIEW_BOUNDS = [[7.2, 68.1], [36.9, 97.3]];
+            const AUTO_REFRESH_MS = 12000;
+            let autoRefreshTimer = null;
+
+            const startPress = () => {
+                longPressTriggered = false;
+                pressTimer = setTimeout(() => {
+                    longPressTriggered = true;
+                    sosPopup.classList.add('show');
+                    setTimeout(() => {
+                        sosPopup.classList.remove('show');
+                        window.location.href = "{{ url_for('mobile_sos') }}";
+                    }, 900);
+                }, 700);
+            };
+
+            const cancelPress = () => {
+                clearTimeout(pressTimer);
+            };
+            sosBtn.addEventListener('pointerdown', startPress);
+            sosBtn.addEventListener('pointerup', () => {
+                cancelPress();
+                if (!longPressTriggered) {
+                    window.location.href = "{{ url_for('mobile_sos') }}";
+                }
+            });
+            sosBtn.addEventListener('pointerleave', cancelPress);
+            sosBtn.addEventListener('pointercancel', cancelPress);
+
+            document.querySelectorAll('.sos').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    window.location.href = "{{ url_for('mobile_sos') }}";
+                });
+            });
+
+            profileBtn.addEventListener('click', () => {
+                // Flask will replace this with true or false before the browser sees it
+                const isLoggedIn = {{ 'true' if session.get('user_id') else 'false' }};
+                
+                if (!isLoggedIn) {
+                    // If not logged in, send them to the login route
+                    window.location.href = "{{ url_for('login') }}";
+                    return;
+                }
+                
+                // If they are logged in, show the profile sheet
+                 profileSheet.classList.add('show');
+                      });
+
+             if (closeProfile) {
+                closeProfile.addEventListener('click', () => {
+                    profileSheet.classList.remove('show');
+                });
+             }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    window.location.href = "{{ url_for('logout') }}";
+                });
+            }
+
+            if (profileForm && profileUsername && profilePhone && profileSaveBtn && profileEditBtn) {
+                let isEditMode = false;
+                const originalUsername = profileUsername.value;
+                const originalPhone = profilePhone.value;
+
+                const setEditMode = (enabled) => {
+                    isEditMode = enabled;
+                    profileUsername.readOnly = !enabled;
+                    profilePhone.readOnly = !enabled;
+                    profileSaveBtn.disabled = !enabled;
+                    profileEditBtn.textContent = enabled ? 'Cancel' : 'Edit';
+                    if (enabled) {
+                        profileUsername.focus();
+                    }
+                };
+
+                setEditMode(false);
+
+                profileEditBtn.addEventListener('click', () => {
+                    if (isEditMode) {
+                        profileUsername.value = originalUsername;
+                        profilePhone.value = originalPhone;
+                        setEditMode(false);
+                        return;
+                    }
+                    setEditMode(true);
+                });
+            }
+
+            if (goLogin) {
+                goLogin.addEventListener('click', () => {
+                    window.location.href = "{{ url_for('login') }}";
+                });
+            }
+
+            profileSheet.addEventListener('click', (event) => {
+                if (event.target === profileSheet) {
+                    profileSheet.classList.remove('show');
+                }
+            });
+
+            const openProfileOnLoad = {{ 'true' if open_profile else 'false' }};
+            if (openProfileOnLoad) {
+                profileSheet.classList.add('show');
+            }
+
+            const updateRegion = (label) => {
+                if (!label) return;
+                regionLabel.textContent = label;
+                localStorage.setItem('alertify_region', label);
+            };
+
+            const severityColor = (value) => {
+                const color = String(value || '').toLowerCase();
+                if (color === 'red') return '#ef4444';
+                if (color === 'orange') return '#f97316';
+                if (color === 'yellow') return '#facc15';
+                if (color === 'green') return '#22c55e';
+                return '#fb7185';
+            };
+
+            const disasterIcon = (value) => {
+                const text = String(value || '').toLowerCase();
+                if (text.includes('flood')) return '🌊';
+                if (text.includes('cyclone') || text.includes('hurricane') || text.includes('storm')) return '🌀';
+                if (text.includes('rain')) return '🌧️';
+                if (text.includes('thunder') || text.includes('lightning')) return '⛈️';
+                if (text.includes('landslide')) return '⛰️';
+                if (text.includes('earthquake') || text.includes('seismic')) return '🌍';
+                if (text.includes('fire')) return '🔥';
+                if (text.includes('heat')) return '🌡️';
+                return '⚠️';
+            };
+
+            const markerIcon = (item) => {
+                const sev = severityColor(item?.severity_color);
+                const glyph = disasterIcon(item?.type || item?.category || 'Alert');
+                return L.divIcon({
+                    className: 'typed-alert-marker',
+                    html: `<span style="display:grid;place-items:center;width:24px;height:24px;border-radius:999px;background:${sev};border:2px solid #ffffff;color:#fff;font-size:13px;box-shadow:0 3px 8px rgba(0,0,0,.22);">${glyph}</span>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12],
+                    popupAnchor: [0, -12]
+                });
+            };
+
+            const severityClass = (item) => {
+                const severityText = String(item?.severity || '').toLowerCase();
+                const severityColorText = String(item?.severity_color || '').toLowerCase();
+                if (severityText === 'alert' || severityColorText === 'red') return 'high';
+                if (severityText === 'warning' || severityColorText === 'orange') return 'medium';
+                return 'low';
+            };
+
+            const escapeHtml = (value) => String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
+            const parseAlertTimestamp = (value) => {
+                const text = String(value || '').trim();
+                if (!text) return null;
+
+                const direct = new Date(text);
+                if (!Number.isNaN(direct.getTime())) return direct;
+
+                const istMatch = text.match(/^([A-Za-z]{3})\s([A-Za-z]{3})\s(\d{1,2})\s(\d{2}):(\d{2})(?::(\d{2}))?\sIST\s(\d{4})$/);
+                if (!istMatch) return null;
+
+                const monthMap = {
+                    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+                    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+                };
+                const month = monthMap[String(istMatch[2] || '').toLowerCase()];
+                if (month === undefined) return null;
+
+                const day = Number(istMatch[3]);
+                const hour = Number(istMatch[4]);
+                const minute = Number(istMatch[5]);
+                const second = Number(istMatch[6] || '0');
+                const year = Number(istMatch[7]);
+
+                const utcMillis = Date.UTC(year, month, day, hour, minute, second) - (5.5 * 60 * 60 * 1000);
+                const parsed = new Date(utcMillis);
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            };
+
+            const actionButtonsHtml = (index) => {
+                const safeIndex = Number.isInteger(index) ? index : -1;
+                return `<div class="actions"><button class="mini" type="button" data-action="share" data-alert-idx="${safeIndex}">Share</button><button class="mini" type="button" data-action="listen" data-alert-idx="${safeIndex}">Listen</button></div>`;
+            };
+
+            const alertSummaryText = (item) => {
+                if (!item) {
+                    const region = String(regionLabel?.textContent || 'selected region').trim();
+                    return `Disaster Guard update: No recent alerts in last ${ALERT_MAX_AGE_HOURS} hours for ${region}. Stay alert and monitor updates.`;
+                }
+
+                const type = String(item?.type || 'Alert').trim();
+                const severity = String(item?.severity || 'Watch').trim();
+                const area = String(item?.area || 'Unknown area').trim();
+                const when = formatAlertTime(item?.start_time);
+                const message = String(item?.message || '').trim();
+                const summary = `${type} ${severity} alert for ${area}. ${when}.`;
+                return message ? `${summary} ${message}` : summary;
+            };
+
+
+            const runShareAction = async (item) => {
+                const text = alertSummaryText(item);
+                const payload = { title: 'Disaster Alert', text };
+                if (navigator.share) {
+                    try {
+                        await navigator.share(payload);
+                        return;
+                    } catch (err) {
+                    }
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        alert('Alert summary copied to clipboard.');
+                        return;
+                    } catch (err) {
+                    }
+                }
+                alert(text);
+            };
+
+            const runListenAction = (item) => {
+                const text = alertSummaryText(item);
+                if (!('speechSynthesis' in window)) {
+                    alert('Listen is not supported on this browser.');
+                    return;
+                }
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.95;
+                utterance.pitch = 1;
+                window.speechSynthesis.speak(utterance);
+            };
+
+            const formatAlertTime = (value) => {
+                const parsed = parseAlertTimestamp(value);
+                if (!parsed) {
+                    const raw = String(value || '').trim();
+                    return raw || 'Time N/A';
+                }
+
+                const diffMillis = Date.now() - parsed.getTime();
+                if (diffMillis <= 0) return 'Just now';
+
+                const diffMinutes = Math.floor(diffMillis / 60000);
+                if (diffMinutes < 1) return 'Just now';
+                if (diffMinutes < 60) return `${diffMinutes}m ago`;
+
+                const diffHours = Math.floor(diffMinutes / 60);
+                if (diffHours < 24) return `${diffHours}h ago`;
+
+                const diffDays = Math.floor(diffHours / 24);
+                return `${diffDays}d ago`;
+            };
+
+            const isRecentAlert = (item, maxAgeHours = ALERT_MAX_AGE_HOURS) => {
+                const startParsed = parseAlertTimestamp(item?.start_time);
+                const endParsed = parseAlertTimestamp(item?.end_time);
+                const reference = [startParsed, endParsed]
+                    .filter(Boolean)
+                    .sort((a, b) => b.getTime() - a.getTime())[0] || null;
+
+                if (!reference) return true;
+
+                const ageMillis = Date.now() - reference.getTime();
+                if (ageMillis < 0) return true;
+                return ageMillis <= maxAgeHours * 60 * 60 * 1000;
+            };
+
+            const fetchLiveAlerts = async (state, sourcePolicy) => {
+                const url = `/api/mobile/live-alerts?state=${encodeURIComponent(state || 'India')}&limit=120&scope=expanded&source_policy=${encodeURIComponent(sourcePolicy)}`;
+                const response = await fetch(url);
+                const payload = await response.json();
+                if (payload && payload.success === false) {
+                    throw new Error(payload.message || 'Live alerts unavailable');
+                }
+                const alerts = Array.isArray(payload?.alerts) ? payload.alerts : [];
+                return { payload, alerts };
+            };
+
+            const renderAlertFeed = (alerts, hadStale = false) => {
+                if (!Array.isArray(alerts) || alerts.length === 0) {
+                    const emptyTitle = hadStale ? `No recent alerts (${ALERT_MAX_AGE_HOURS}h)` : 'No live alerts found';
+                    const emptyMeta = hadStale ? 'Older alerts hidden automatically' : 'Try another region';
+                    latestFeedAlerts = [];
+                    alertFeed.innerHTML = `<article class="card low"><div class="head"><h3>${emptyTitle}</h3><span class="tag low">Info</span></div><div class="meta"><span>📍 ${emptyMeta}</span><span>🕒 Updated now</span></div>${actionButtonsHtml(-1)}</article>`;
+                    return;
+                }
+
+                latestFeedAlerts = alerts.slice(0, 4);
+                alertFeed.innerHTML = latestFeedAlerts.map((item, index) => {
+                    const tagClass = severityClass(item);
+                    const title = `${item?.type || 'Alert'} Alert`;
+                    const locationText = item?.area || 'Unknown area';
+                    const timeText = formatAlertTime(item?.start_time);
+                    const severityText = item?.severity || 'Watch';
+
+                    return `<article class="card ${tagClass}"><div class="head"><h3>${escapeHtml(title)}</h3><span class="tag ${tagClass}">${escapeHtml(severityText)}</span></div><div class="meta"><span>📍 ${escapeHtml(locationText)}</span><span>🕒 ${escapeHtml(timeText)}</span></div>${actionButtonsHtml(index)}</article>`;
+                }).join('');
+            };
+
+            const loadAlertFeed = async (state = 'India', allowAutoSwitch = true) => {
+                const sourcePolicy = localStorage.getItem('alertify_source_policy') || 'live_only';
+                try {
+                    const selectedState = state || 'India';
+                    const { alerts } = await fetchLiveAlerts(selectedState, sourcePolicy);
+                    const freshAlerts = alerts.filter((item) => isRecentAlert(item, ALERT_MAX_AGE_HOURS));
+
+                    if (freshAlerts.length > 0) {
+                        renderAlertFeed(freshAlerts, false);
+                        if (alertsUpdatedAt) alertsUpdatedAt.textContent = `Updated now • ${ALERT_MAX_AGE_HOURS}h window`;
+                        return;
+                    }
+
+                    if (String(selectedState).toLowerCase() !== 'india') {
+                        const indiaResult = await fetchLiveAlerts('India', sourcePolicy);
+                        const indiaFreshAlerts = indiaResult.alerts.filter((item) => isRecentAlert(item, ALERT_MAX_AGE_HOURS));
+                        if (indiaFreshAlerts.length > 0) {
+                            renderAlertFeed(indiaFreshAlerts, false);
+                            if (alertsUpdatedAt) alertsUpdatedAt.textContent = `Showing India • ${ALERT_MAX_AGE_HOURS}h window`;
+                            return;
+                        }
+                    }
+
+                    renderAlertFeed(freshAlerts, alerts.length > 0 && freshAlerts.length === 0);
+                    if (alertsUpdatedAt) alertsUpdatedAt.textContent = `Updated now • ${ALERT_MAX_AGE_HOURS}h window`;
+                } catch (error) {
+                    const selectedPolicy = localStorage.getItem('alertify_source_policy') || 'live_only';
+                    if (selectedPolicy === 'live_only' && allowAutoSwitch) {
+                        localStorage.setItem('alertify_source_policy', 'auto_fallback');
+                        if (alertsUpdatedAt) alertsUpdatedAt.textContent = 'Auto fallback';
+                        return loadAlertFeed(state, false);
+                    }
+
+                    alertFeed.innerHTML = selectedPolicy === 'live_only'
+                        ? `<article class="card high"><div class="head"><h3>Live API unavailable</h3><span class="tag high">Always Live</span></div><div class="meta"><span>📍 Start internal API</span><span>🕒 Retry shortly</span></div>${actionButtonsHtml(-1)}</article>`
+                        : `<article class="card high"><div class="head"><h3>Unable to load alerts</h3><span class="tag high">Error</span></div><div class="meta"><span>📍 Network/API issue</span><span>🕒 Retry shortly</span></div>${actionButtonsHtml(-1)}</article>`;
+
+                    if (alertsUpdatedAt) alertsUpdatedAt.textContent = 'Update failed';
+                }
+            };
+
+            alertFeed.addEventListener('click', async (event) => {
+                const button = event.target.closest('.mini[data-action]');
+                if (!button) return;
+
+                const action = String(button.dataset.action || '').trim().toLowerCase();
+                const index = Number(button.dataset.alertIdx);
+                const item = Number.isInteger(index) && index >= 0 ? latestFeedAlerts[index] : null;
+
+                if (action === 'share') {
+                    await runShareAction(item);
+                    return;
+                }
+                if (action === 'listen') {
+                    runListenAction(item);
+                    return;
+                }
+            });
+
+            const initLiveMap = () => {
+                if (liveMap || !window.L || !liveMapNode) return;
+                liveMap = L.map('liveMap', {
+                    zoomControl: true,
+                    attributionControl: false,
+                    zoomSnap: 0.25,
+                    zoomDelta: 0.25,
+                    worldCopyJump: false
+                }).setView([22.9734, 78.6569], 5);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    minZoom: 3
+                }).addTo(liveMap);
+                liveMarkerLayer = L.layerGroup().addTo(liveMap);
+            };
+
+            const isMapFullscreen = () => {
+                return document.fullscreenElement === mapPanel
+                    || document.webkitFullscreenElement === mapPanel
+                    || mapPanel.classList.contains('fullscreen-fallback');
+            };
+
+            const syncMapFullscreenButton = () => {
+                if (!mapFullscreenBtn) return;
+                if (isMapFullscreen()) {
+                    mapFullscreenBtn.textContent = '🗕';
+                    mapFullscreenBtn.setAttribute('aria-label', 'Minimize map');
+                } else {
+                    mapFullscreenBtn.textContent = '⛶';
+                    mapFullscreenBtn.setAttribute('aria-label', 'Fullscreen map');
+                }
+            };
+
+            const refreshMapLayout = () => {
+                if (!liveMap) return;
+                setTimeout(() => liveMap.invalidateSize(), 120);
+            };
+
+            const applyIndiaFullscreenView = () => {
+                if (!liveMap) return;
+                liveMap.setMaxBounds(INDIA_VIEW_BOUNDS);
+                liveMap.options.maxBoundsViscosity = 1.0;
+                const panelWidth = mapPanel?.clientWidth || window.innerWidth || 900;
+                const panelHeight = mapPanel?.clientHeight || window.innerHeight || 500;
+                const padX = Math.max(3, Math.round(panelWidth * 0.01));
+                const padY = Math.max(3, Math.round(panelHeight * 0.01));
+                liveMap.fitBounds(INDIA_VIEW_BOUNDS, {
+                    paddingTopLeft: [padX, padY],
+                    paddingBottomRight: [padX, padY],
+                    animate: false,
+                    maxZoom: 6
+                });
+                liveMap.setMinZoom(Math.max(4, liveMap.getZoom() - 0.6));
+                liveMap.panInsideBounds(INDIA_VIEW_BOUNDS, { animate: false });
+            };
+
+            const restoreNormalMapBounds = () => {
+                if (!liveMap) return;
+                liveMap.setMaxBounds(null);
+                liveMap.options.maxBoundsViscosity = 0;
+                liveMap.setMinZoom(3);
+            };
+
+            const enterMapFullscreen = async () => {
+                try {
+                    if (mapPanel.requestFullscreen) {
+                        await mapPanel.requestFullscreen();
+                        document.body.classList.add('map-fs-open');
+                    } else if (mapPanel.webkitRequestFullscreen) {
+                        mapPanel.webkitRequestFullscreen();
+                        document.body.classList.add('map-fs-open');
+                    } else {
+                        mapPanel.classList.add('fullscreen-fallback');
+                        document.body.classList.add('map-fs-open');
+                    }
+                } catch (error) {
+                    mapPanel.classList.add('fullscreen-fallback');
+                    document.body.classList.add('map-fs-open');
+                }
+                syncMapFullscreenButton();
+                refreshMapLayout();
+                applyIndiaFullscreenView();
+            };
+
+            const exitMapFullscreen = async () => {
+                if (mapPanel.classList.contains('fullscreen-fallback')) {
+                    mapPanel.classList.remove('fullscreen-fallback');
+                }
+
+                if (document.fullscreenElement === mapPanel && document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitFullscreenElement === mapPanel && document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+
+                document.body.classList.remove('map-fs-open');
+                restoreNormalMapBounds();
+                syncMapFullscreenButton();
+                refreshMapLayout();
+            };
+
+            const toggleMapFullscreen = async () => {
+                if (!mapPanel) return;
+                if (isMapFullscreen()) {
+                    await exitMapFullscreen();
+                    return;
+                }
+                if (locationSheet && locationSheet.classList.contains('show')) {
+                    locationSheet.classList.remove('show');
+                    if (liveMapNode) liveMapNode.style.pointerEvents = 'auto';
+                }
+                await enterMapFullscreen();
+            };
+
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && !mapPanel.classList.contains('fullscreen-fallback')) {
+                    document.body.classList.remove('map-fs-open');
+                    restoreNormalMapBounds();
+                }
+                syncMapFullscreenButton();
+                refreshMapLayout();
+            });
+            document.addEventListener('webkitfullscreenchange', () => {
+                const webkitElement = document.webkitFullscreenElement;
+                if (!webkitElement && !mapPanel.classList.contains('fullscreen-fallback')) {
+                    document.body.classList.remove('map-fs-open');
+                    restoreNormalMapBounds();
+                }
+                syncMapFullscreenButton();
+                refreshMapLayout();
+            });
+            window.addEventListener('orientationchange', refreshMapLayout);
+
+            const updateLiveMap = async (state = 'India', focusCoords = null, allowAutoSwitch = true) => {
+                initLiveMap();
+                if (!liveMap || !liveMarkerLayer) return;
+
+                mapStatus.textContent = 'Updating alerts...';
+
+                const sourcePolicy = localStorage.getItem('alertify_source_policy') || 'live_only';
+                const url = `/api/mobile/live-alerts?state=${encodeURIComponent(state || 'India')}&limit=220&scope=expanded&source_policy=${encodeURIComponent(sourcePolicy)}`;
+                try {
+                    const response = await fetch(url);
+                    const payload = await response.json();
+                    if (payload && payload.success === false) {
+                        throw new Error(payload.message || 'Live alerts unavailable');
+                    }
+                    const alerts = Array.isArray(payload?.alerts) ? payload.alerts : [];
+
+                    liveMarkerLayer.clearLayers();
+                    const bounds = [];
+
+                    alerts.forEach((item) => {
+                        if (typeof item.lat !== 'number' || typeof item.lon !== 'number') return;
+
+                        const marker = L.marker([item.lat, item.lon], {
+                            icon: markerIcon(item)
+                        });
+
+                        marker.bindPopup(`
+                            <div style="font-family:Inter,sans-serif;min-width:180px;">
+                                <strong>${item.type || 'Alert'}</strong><br/>
+                                <span style="font-size:12px;color:#475569;">${item.area || 'Unknown area'}</span><br/>
+                                <span style="font-size:11px;color:#64748b;">${item.source || ''}</span>
+                            </div>
+                        `);
+
+                        marker.addTo(liveMarkerLayer);
+                        bounds.push([item.lat, item.lon]);
+                    });
+
+                    if (isMapFullscreen()) {
+                        applyIndiaFullscreenView();
+                    } else if (focusCoords && Array.isArray(focusCoords)) {
+                        liveMap.setView(focusCoords, state && state.toLowerCase() === 'india' ? 5 : 7);
+                    } else if (bounds.length > 0) {
+                        liveMap.fitBounds(bounds, { padding: [18, 18], maxZoom: state && state.toLowerCase() === 'india' ? 6 : 8 });
+                    } else {
+                        liveMap.setView([22.9734, 78.6569], state && state.toLowerCase() === 'india' ? 5 : 6);
+                    }
+
+                    mapStatus.textContent = `${alerts.length} live alerts (expanded)`;
+                    loadAlertFeed(state, allowAutoSwitch);
+                } catch (error) {
+                    const sourcePolicy = localStorage.getItem('alertify_source_policy') || 'live_only';
+                    if (sourcePolicy === 'live_only' && allowAutoSwitch) {
+                        localStorage.setItem('alertify_source_policy', 'auto_fallback');
+                        mapStatus.textContent = 'Live API unavailable • switched to Auto Fallback';
+                        if (alertsUpdatedAt) alertsUpdatedAt.textContent = 'Auto fallback';
+                        return updateLiveMap(state, focusCoords, false);
+                    }
+                    mapStatus.textContent = sourcePolicy === 'live_only'
+                        ? 'Live API unavailable (Always Live mode)'
+                        : 'Map data unavailable';
+                    loadAlertFeed(state, false);
+                }
+            };
+
+            const renderStates = (query = '') => {
+                const text = query.trim().toLowerCase();
+                const filtered = states.filter((state) => state.toLowerCase().includes(text));
+                stateList.innerHTML = filtered.map((state) => `<button class="state-item" type="button" data-state="${state}">${state}</button>`).join('');
+            };
+
+            const openLocationModal = () => {
+                locationSearch.value = '';
+                locationSheet.classList.add('show');
+                if (liveMapNode) liveMapNode.style.pointerEvents = 'none';
+            };
+
+            const closeLocation = () => {
+                locationSheet.classList.remove('show');
+                if (liveMapNode) liveMapNode.style.pointerEvents = 'auto';
+            };
+
+            const setStateFromCoords = async (lat, lon) => {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 2600);
+
+                try {
+                    const bdcResponse = await fetch(
+                        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+                        { signal: controller.signal }
+                    );
+                    const bdc = await bdcResponse.json();
+                    const city = bdc?.city || bdc?.locality || bdc?.principalSubdivision;
+                    const state = bdc?.principalSubdivision || '';
+                    const postcode = bdc?.postcode || '';
+
+                    if (state || city) {
+                        const place = city && state && city !== state ? `${city}, ${state}` : (state || city);
+                        updateRegion(postcode ? `${place} • ${postcode}` : place);
+                        currentCoords = [lat, lon];
+                        updateLiveMap(state || 'India', currentCoords);
+                        clearTimeout(timeout);
+                        return;
+                    }
+                } catch (error) {
+                }
+
+                try {
+                    const nomResponse = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`,
+                        { signal: controller.signal }
+                    );
+                    const nom = await nomResponse.json();
+                    const city = nom?.address?.city || nom?.address?.town || nom?.address?.village || nom?.address?.county;
+                    const state = nom?.address?.state || '';
+                    const postcode = nom?.address?.postcode || '';
+
+                    if (state || city) {
+                        const place = city && state ? `${city}, ${state}` : (state || city);
+                        updateRegion(postcode ? `${place} • ${postcode}` : place);
+                        currentCoords = [lat, lon];
+                        updateLiveMap(state || 'India', currentCoords);
+                    } else {
+                        fallbackByIp();
+                    }
+                } catch (error) {
+                    fallbackByIp();
+                } finally {
+                    clearTimeout(timeout);
+                }
+            };
+
+            const fallbackByIp = async () => {
+                try {
+                    const response = await fetch('https://ipapi.co/json/');
+                    const data = await response.json();
+                    const city = data?.city || '';
+                    const state = data?.region || '';
+                    const code = data?.postal || '';
+
+                    if (city || state) {
+                        const place = city && state ? `${city}, ${state}` : (state || city);
+                        updateRegion(code ? `${place} • ${code}` : place);
+                        updateLiveMap(state || 'India');
+                        return;
+                    }
+                } catch (error) {
+                }
+                regionLabel.textContent = 'Select Location';
+                updateLiveMap('India');
+            };
+
+            const normalizeRegionQuery = (value) => {
+                const raw = String(value || '').trim();
+                if (!raw || raw.toLowerCase() === 'select location') return 'India';
+
+                const withoutPostal = raw.split('•')[0].trim();
+                if (withoutPostal.includes(',')) {
+                    const parts = withoutPostal.split(',').map((part) => part.trim()).filter(Boolean);
+                    return parts[parts.length - 1] || 'India';
+                }
+                return withoutPostal || 'India';
+            };
+
+            const refreshHomeData = async (manual = false) => {
+                const regionSource = localStorage.getItem('alertify_region') || regionLabel.textContent || 'India';
+                const query = normalizeRegionQuery(regionSource);
+
+                if (manual && refreshBtn) {
+                    refreshBtn.classList.remove('spinning');
+                    void refreshBtn.offsetWidth;
+                    refreshBtn.classList.add('spinning');
+                }
+
+                await updateLiveMap(query, currentCoords, true);
+
+                if (manual && refreshBtn) {
+                    setTimeout(() => refreshBtn.classList.remove('spinning'), 730);
+                }
+            };
+
+            const detectState = (closeModalAfter = false, forcePrompt = false) => {
+                const savedRegion = localStorage.getItem('alertify_region');
+                if (savedRegion && !closeModalAfter && !forcePrompt) {
+                    regionLabel.textContent = savedRegion;
+                    updateLiveMap(savedRegion);
+                    return;
+                }
+
+                if (!navigator.geolocation) {
+                    regionLabel.textContent = 'Location not supported by browser';
+                    fallbackByIp();
+                    return;
+                }
+
+                if (window.isSecureContext === false) {
+                    regionLabel.textContent = 'Location requires HTTPS or localhost';
+                    fallbackByIp();
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        setStateFromCoords(lat, lon).finally(() => {
+                            if (closeModalAfter) closeLocation();
+                        });
+                    },
+                    (error) => {
+                        if (error && error.code === error.PERMISSION_DENIED) {
+                            regionLabel.textContent = 'Location blocked • allow permission in browser settings';
+                        } else if (error && error.code === error.TIMEOUT) {
+                            regionLabel.textContent = 'Location timeout • using network location';
+                        } else {
+                            regionLabel.textContent = 'Location unavailable • using network location';
+                        }
+                        fallbackByIp();
+                    },
+                    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+                );
+            };
+
+            regionTrigger.addEventListener('click', openLocationModal);
+            closeLocationModal.addEventListener('click', closeLocation);
+            locationSheet.addEventListener('click', (event) => {
+                if (event.target === locationSheet) closeLocation();
+            });
+
+            enableCurrentLocation.addEventListener('click', () => {
+                localStorage.removeItem('alertify_region');
+                detectState(true, true);
+            });
+
+            stateList.addEventListener('click', (event) => {
+                const button = event.target.closest('.state-item');
+                if (!button) return;
+                const value = button.dataset.state;
+                updateRegion(value);
+                updateLiveMap(value);
+                closeLocation();
+            });
+
+            locationSearch.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const value = locationSearch.value.trim();
+                    if (!value) return;
+                    updateRegion(value);
+                    updateLiveMap(value);
+                    closeLocation();
+                }
+            });
+
+            locationSearch.addEventListener('input', () => {
+                renderStates(locationSearch.value);
+            });
+
+            if (menuNavBtn && navMenu) {
+                menuNavBtn.setAttribute('aria-expanded', 'false');
+                menuNavBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const isOpen = navMenu.classList.toggle('show');
+                    menuNavBtn.classList.toggle('open', isOpen);
+                    menuNavBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+
+                navMenu.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                });
+
+                document.addEventListener('click', () => {
+                    navMenu.classList.remove('show');
+                    menuNavBtn.classList.remove('open');
+                    menuNavBtn.setAttribute('aria-expanded', 'false');
+                });
+            }
+
+            renderStates();
+            initLiveMap();
+            syncMapFullscreenButton();
+
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    refreshHomeData(true);
+                });
+            }
+
+            if (autoRefreshTimer) {
+                clearInterval(autoRefreshTimer);
+            }
+            autoRefreshTimer = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    refreshHomeData(false);
+                }
+            }, AUTO_REFRESH_MS);
+
+            if (mapFullscreenBtn) {
+                mapFullscreenBtn.addEventListener('click', toggleMapFullscreen);
+            }
+
+            detectState();
+        });
+    </script>
+</body>
+</html>

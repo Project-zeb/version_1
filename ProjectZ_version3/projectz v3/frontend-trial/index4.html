@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Disaster Guard Mobile Flow</title>
+    <script>
+        window.location.replace('home-mobile.html');
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+
+    <style>
+        :root {
+            --bg: #ecf2f9;
+            --phone-bg: #f9fbfe;
+            --text: #16253b;
+            --muted: #7c8ea9;
+            --line: #dce6f2;
+            --blue: #2f86ff;
+            --green: #2dc98c;
+            --orange: #ffb347;
+            --red: #ff6b63;
+            --soft-blue: #eaf2ff;
+            --soft-green: #e8faf2;
+            --soft-orange: #fff3e2;
+            --soft-red: #ffe9e8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #eaf1f8, #f4f7fc);
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px 12px;
+        }
+
+        .phone {
+            width: min(100%, 392px);
+            height: min(840px, 95vh);
+            border-radius: 34px;
+            border: 1px solid #d8e3ef;
+            background: var(--phone-bg);
+            box-shadow: 0 22px 50px rgba(96, 126, 163, 0.25);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-notch {
+            height: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f9fbfe;
+            position: sticky;
+            top: 0;
+            z-index: 4;
+        }
+
+        .notch {
+            width: 120px;
+            height: 28px;
+            border-radius: 0 0 16px 16px;
+            background: #e4edf7;
+        }
+
+        .screen {
+            display: none;
+            height: calc(100% - 100px);
+            overflow-y: auto;
+            padding: 14px 14px 90px;
+            gap: 12px;
+        }
+
+        .screen.active {
+            display: grid;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .location {
+            display: grid;
+            gap: 2px;
+        }
+
+        .location small {
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .location strong {
+            font-size: 0.95rem;
+        }
+
+        .top-icons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .circle-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: #fff;
+            display: grid;
+            place-items: center;
+            color: #5b6f8e;
+            font-size: 0.88rem;
+        }
+
+        .search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .search input {
+            border: none;
+            outline: none;
+            width: 100%;
+            background: transparent;
+            color: #3d5272;
+            font-size: 0.86rem;
+        }
+
+        .block-title {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #405a7f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 0 4px rgba(45, 201, 140, 0.2);
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse 1.3s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        .alerts {
+            display: grid;
+            gap: 10px;
+        }
+
+        .alert-card {
+            border-radius: 16px;
+            padding: 11px;
+            border: 1px solid transparent;
+            display: grid;
+            gap: 8px;
+        }
+
+        .alert-card.low {
+            background: var(--soft-blue);
+            border-color: #cfe0ff;
+        }
+
+        .alert-card.medium {
+            background: var(--soft-orange);
+            border-color: #f9d8aa;
+        }
+
+        .alert-card.high {
+            background: var(--soft-red);
+            border-color: #ffc7c4;
+        }
+
+        .alert-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .alert-head h3 {
+            font-size: 0.94rem;
+        }
+
+        .tag {
+            border-radius: 999px;
+            font-size: 0.66rem;
+            font-weight: 700;
+            padding: 3px 8px;
+        }
+
+        .tag.low { background: #deebff; color: #1e5fb3; }
+        .tag.medium { background: #ffe8c2; color: #915b0f; }
+        .tag.high { background: #ffd6d4; color: #a5352d; }
+
+        .alert-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.72rem;
+            color: #5b7395;
+            font-weight: 600;
+        }
+
+        .alert-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .mini-btn {
+            border: 1px solid rgba(26, 61, 111, 0.14);
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            padding: 6px 0;
+            text-align: center;
+            font-size: 0.68rem;
+            color: #36557d;
+            font-weight: 600;
+        }
+
+        .map {
+            border-radius: 16px;
+            border: 1px solid #d2e4f9;
+            background: #edf6ff;
+            height: 170px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .map svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .map-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid #d6e6f8;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #335781;
+        }
+
+        .stats {
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 10px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .stat {
+            border-radius: 10px;
+            background: #f5f9ff;
+            border: 1px solid #dfebf9;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .stat small {
+            color: #6684aa;
+            font-size: 0.67rem;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .stat strong {
+            color: #1f4779;
+            font-size: 0.98rem;
+        }
+
+        .accordion {
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .acc-item + .acc-item {
+            border-top: 1px solid #e5eef9;
+        }
+
+        .acc-btn {
+            width: 100%;
+            border: none;
+            background: #fff;
+            text-align: left;
+            padding: 11px 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            color: #2c4f7d;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .acc-content {
+            max-height: 0;
+            overflow: hidden;
+            font-size: 0.75rem;
+            color: #5c789f;
+            line-height: 1.55;
+            padding: 0 12px;
+            transition: max-height 0.3s ease;
+        }
+
+        .sos {
+            border: none;
+            border-radius: 12px;
+            padding: 11px 14px;
+            width: 100%;
+            color: #fff;
+            background: linear-gradient(135deg, #ff6f66, #ff4f58);
+            font-weight: 800;
+            letter-spacing: 0.2px;
+            box-shadow: 0 10px 20px rgba(255, 91, 97, 0.35);
+            cursor: pointer;
+        }
+
+        .detail-banner {
+            border-radius: 16px;
+            border: 1px solid #ffc4bf;
+            background: linear-gradient(135deg, #ffe2e0, #ffd5d2);
+            padding: 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .detail-banner h2 {
+            font-size: 1rem;
+            color: #8d2f35;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: #8f5661;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .timeline {
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fff;
+            padding: 10px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .step {
+            display: grid;
+            grid-template-columns: 18px 1fr;
+            gap: 8px;
+            align-items: start;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-top: 3px;
+            background: var(--blue);
+            box-shadow: 0 0 0 4px rgba(47, 134, 255, 0.18);
+        }
+
+        .step p {
+            font-size: 0.76rem;
+            color: #5d789f;
+            line-height: 1.5;
+        }
+
+        .step strong {
+            display: block;
+            color: #274c7d;
+            font-size: 0.8rem;
+            margin-bottom: 2px;
+        }
+
+        .tracking-card {
+            border-radius: 16px;
+            border: 1px solid #d8e8fb;
+            background: #fff;
+            padding: 10px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .bar {
+            height: 10px;
+            border-radius: 999px;
+            background: #ebf3ff;
+            overflow: hidden;
+            border: 1px solid #d8e8fc;
+        }
+
+        .bar > span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--blue), var(--green));
+        }
+
+        .eta-row {
+            display: flex;
+            justify-content: space-between;
+            color: #587699;
+            font-size: 0.74rem;
+            font-weight: 600;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .quick-actions button {
+            border-radius: 10px;
+            border: 1px solid #d8e7f9;
+            background: #f5f9ff;
+            color: #335882;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 8px 0;
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .chips button {
+            border: 1px solid #d8e7fa;
+            background: #f5f9ff;
+            color: #55769f;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .chips button.active {
+            background: #e8f1ff;
+            color: #2160b7;
+            border-color: #c6ddff;
+        }
+
+        .list {
+            display: grid;
+            gap: 9px;
+        }
+
+        .list-item {
+            border-radius: 12px;
+            border: 1px solid #d7e7f9;
+            background: #fff;
+            padding: 10px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .list-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .list-head h4 {
+            font-size: 0.84rem;
+            color: #274f7d;
+        }
+
+        .list-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #6583a9;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .nav {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 72px;
+            background: rgba(255, 255, 255, 0.92);
+            border-top: 1px solid #dbe7f5;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 8px 10px 12px;
+            backdrop-filter: blur(8px);
+            z-index: 5;
+        }
+
+        .nav button {
+            border: none;
+            background: transparent;
+            display: grid;
+            place-items: center;
+            gap: 4px;
+            color: #6986ac;
+            font-size: 0.66rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .nav button span:first-child {
+            font-size: 1rem;
+        }
+
+        .nav button.active {
+            color: var(--blue);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <div class="status-notch"><div class="notch"></div></div>
+
+        <section class="screen active" data-screen="home">
+            <header class="topbar reveal">
+                <div class="location">
+                    <small>Region</small>
+                    <strong>Bengaluru • Electronic City</strong>
+                </div>
+                <div class="top-icons">
+                    <button class="circle-btn">🔔</button>
+                    <button class="circle-btn">👤</button>
+                </div>
+            </header>
+
+            <div class="search reveal">
+                <span>🔎</span>
+                <input type="text" placeholder="Search" />
+            </div>
+
+            <div class="block-title reveal">
+                <span><span class="live-dot"></span>Active Alerts</span>
+                <span style="font-size:0.73rem;color:#6f88a8;font-weight:600;">Updated now</span>
+            </div>
+
+            <section class="alerts" id="alertFeed">
+                <article class="alert-card low reveal">
+                    <div class="alert-head">
+                        <h3>Hurricane Alert</h3>
+                        <span class="tag low">Low intensity</span>
+                    </div>
+                    <div class="alert-meta">
+                        <span>📍 MV Extension, Hoskote</span>
+                        <span>🕒 09:12 IST</span>
+                    </div>
+                    <div class="alert-actions">
+                        <div class="mini-btn">Share</div>
+                        <div class="mini-btn">Listen</div>
+                        <div class="mini-btn">Dos & Dont's</div>
+                    </div>
+                </article>
+
+                <article class="alert-card medium reveal">
+                    <div class="alert-head">
+                        <h3>Flood Alert</h3>
+                        <span class="tag medium">Severe</span>
+                    </div>
+                    <div class="alert-meta">
+                        <span>📍 Koramangala Drain Belt</span>
+                        <span>🕒 10:28 IST</span>
+                    </div>
+                    <div class="alert-actions">
+                        <div class="mini-btn">Share</div>
+                        <div class="mini-btn">Listen</div>
+                        <div class="mini-btn">Dos & Dont's</div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="map reveal">
+                <span class="map-badge">Rescue nodes tracking active</span>
+                <svg viewBox="0 0 640 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="640" height="280" fill="#DDF0FF" />
+                    <path d="M16 66L122 38L196 78L278 44L364 86L448 55L526 84L620 48V232L530 254L448 226L370 252L290 220L208 242L126 214L16 240V66Z" fill="#B7DBFC" />
+                    <path d="M62 104L162 86L242 116L334 94L420 122L538 98" stroke="#7CB8EA" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="244" cy="148" r="10" fill="#FF6B63" />
+                    <circle cx="334" cy="116" r="10" fill="#FF6B63" />
+                    <circle cx="422" cy="168" r="10" fill="#FF6B63" />
+                    <path id="rescuePath" d="M244 148C272 130 300 116 334 116C372 116 392 140 422 168" stroke="#2F86FF" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 10" />
+                    <circle id="rescueDot" cx="262" cy="137" r="8" fill="#2DC98C" />
+                </svg>
+            </section>
+
+            <section class="stats reveal" id="statsBlock">
+                <div class="block-title">
+                    <span>Last 1-Year Impact</span>
+                    <span style="font-size:0.72rem;color:#6f88a8;font-weight:600;">Dynamic data</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <small>Events</small>
+                        <strong data-target="312">0</strong>
+                    </div>
+                    <div class="stat">
+                        <small>Deaths</small>
+                        <strong data-target="18940">0</strong>
+                    </div>
+                    <div class="stat">
+                        <small>Loss</small>
+                        <strong data-target="67.4" data-prefix="$" data-suffix="B">0</strong>
+                    </div>
+                </div>
+            </section>
+
+            <button class="sos reveal">SOS CALL</button>
+        </section>
+
+        <section class="screen" data-screen="details">
+            <header class="topbar">
+                <div class="location">
+                    <small>Alert Detail</small>
+                    <strong>Earthquake Alert • Zone C</strong>
+                </div>
+                <div class="top-icons">
+                    <button class="circle-btn">↗</button>
+                    <button class="circle-btn">♡</button>
+                </div>
+            </header>
+
+            <article class="detail-banner">
+                <h2>High Intensity Seismic Activity</h2>
+                <div class="detail-meta">
+                    <span>📍 South Sector Line-3</span>
+                    <span>🕒 11:47 IST</span>
+                    <span>📶 Magnitude 6.2</span>
+                </div>
+                <button class="sos" style="margin-top:2px;">Call Emergency Helpline</button>
+            </article>
+
+            <article class="tracking-card">
+                <div class="block-title"><span>Rescue Team Progress</span><span id="etaText">ETA 11m</span></div>
+                <div class="bar"><span id="progressBar"></span></div>
+                <div class="eta-row">
+                    <span>Nearest team: Unit A14</span>
+                    <span id="distanceText">2.8 km away</span>
+                </div>
+            </article>
+
+            <article class="timeline">
+                <div class="block-title"><span>Incident Timeline</span><span style="font-size:0.72rem;color:#6f88a8;">Live</span></div>
+                <div class="step">
+                    <span class="step-dot"></span>
+                    <div>
+                        <strong>Alert Generated</strong>
+                        <p>Primary seismic signal crossed safety threshold and auto-alert was dispatched to command channels.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-dot" style="background:#ffb347;box-shadow:0 0 0 4px rgba(255,179,71,.2);"></span>
+                    <div>
+                        <strong>Field Team Dispatched</strong>
+                        <p>Medical and rescue units assigned through nearest availability matrix and route safety scoring.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-dot" style="background:#2dc98c;box-shadow:0 0 0 4px rgba(45,201,140,.2);"></span>
+                    <div>
+                        <strong>Shelter Activation</strong>
+                        <p>Three local shelters opened and food-water kits activated for immediate intake.</p>
+                    </div>
+                </div>
+            </article>
+
+            <div class="quick-actions">
+                <button>Safe Route</button>
+                <button>Share Alert</button>
+                <button>Volunteer</button>
+            </div>
+        </section>
+
+        <section class="screen" data-screen="alerts">
+            <header class="topbar">
+                <div class="location">
+                    <small>Alert Feed</small>
+                    <strong>All Disaster Alerts</strong>
+                </div>
+                <div class="top-icons">
+                    <button class="circle-btn">⚙</button>
+                </div>
+            </header>
+
+            <div class="chips">
+                <button class="active">All</button>
+                <button>Earthquake</button>
+                <button>Flood</button>
+                <button>Cyclone</button>
+                <button>Fire</button>
+            </div>
+
+            <div class="list" id="alertList">
+                <article class="list-item">
+                    <div class="list-head">
+                        <h4>Earthquake Alert • South Sector Line-3</h4>
+                        <span class="tag high">High</span>
+                    </div>
+                    <div class="list-meta"><span>11:47 IST</span><span>2.8 km</span></div>
+                </article>
+                <article class="list-item">
+                    <div class="list-head">
+                        <h4>Flood Alert • Koramangala Drain Belt</h4>
+                        <span class="tag medium">Severe</span>
+                    </div>
+                    <div class="list-meta"><span>10:28 IST</span><span>4.4 km</span></div>
+                </article>
+                <article class="list-item">
+                    <div class="list-head">
+                        <h4>Hurricane Alert • MV Extension, Hoskote</h4>
+                        <span class="tag low">Low</span>
+                    </div>
+                    <div class="list-meta"><span>09:12 IST</span><span>7.2 km</span></div>
+                </article>
+            </div>
+
+            <section class="accordion" id="accordion">
+                <article class="acc-item open">
+                    <button class="acc-btn" type="button">
+                        <span>What to carry during evacuation?</span>
+                        <span>−</span>
+                    </button>
+                    <div class="acc-content">Carry identification, medicines, power bank, water, and emergency contacts. Keep essentials in one go-bag for quick movement.</div>
+                </article>
+                <article class="acc-item">
+                    <button class="acc-btn" type="button">
+                        <span>How often do alerts refresh?</span>
+                        <span>+</span>
+                    </button>
+                    <div class="acc-content">Critical alerts refresh every 30 seconds. Verified updates from command center override older messages automatically.</div>
+                </article>
+            </section>
+        </section>
+
+        <nav class="nav">
+            <button class="active" data-target-screen="home"><span>🏠</span><span>Home</span></button>
+            <button data-target-screen="details"><span>📍</span><span>Details</span></button>
+            <button data-target-screen="alerts"><span>🚨</span><span>Alerts</span></button>
+        </nav>
+    </section>
+
+    <script>
+        function switchScreen(target) {
+            document.querySelectorAll('.screen').forEach((screen) => {
+                screen.classList.toggle('active', screen.dataset.screen === target);
+            });
+
+            document.querySelectorAll('.nav button').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.targetScreen === target);
+            });
+
+            const activeScreen = document.querySelector(`.screen[data-screen="${target}"]`);
+            if (activeScreen) {
+                activeScreen.scrollTop = 0;
+            }
+
+            if (window.gsap && activeScreen) {
+                gsap.fromTo(activeScreen.children,
+                    { opacity: 0, y: 12 },
+                    { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: 'power2.out' }
+                );
+            }
+        }
+
+        function initCounters() {
+            if (!window.CountUp) return;
+            const block = document.getElementById('statsBlock');
+            if (!block) return;
+
+            block.querySelectorAll('[data-target]').forEach((el) => {
+                const target = Number(el.dataset.target);
+                const decimals = String(target).includes('.') ? 1 : 0;
+                const counter = new window.CountUp.CountUp(el, target, {
+                    duration: 2,
+                    decimalPlaces: decimals,
+                    separator: ',',
+                    prefix: el.dataset.prefix || '',
+                    suffix: el.dataset.suffix || ''
+                });
+                if (!counter.error) counter.start();
+            });
+        }
+
+        function initAccordion(rootId) {
+            const accordion = document.getElementById(rootId);
+            if (!accordion) return;
+
+            const items = [...accordion.querySelectorAll('.acc-item')];
+            items.forEach((item) => {
+                if (item.classList.contains('open')) {
+                    const content = item.querySelector('.acc-content');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+
+            accordion.addEventListener('click', (event) => {
+                const btn = event.target.closest('.acc-btn');
+                if (!btn) return;
+
+                const item = btn.closest('.acc-item');
+                const content = item.querySelector('.acc-content');
+                const icon = btn.querySelector('span:last-child');
+                const isOpen = item.classList.contains('open');
+
+                items.forEach((entry) => {
+                    if (entry !== item) {
+                        entry.classList.remove('open');
+                        entry.querySelector('.acc-content').style.maxHeight = '0px';
+                        entry.querySelector('.acc-btn span:last-child').textContent = '+';
+                    }
+                });
+
+                if (isOpen) {
+                    item.classList.remove('open');
+                    content.style.maxHeight = '0px';
+                    icon.textContent = '+';
+                } else {
+                    item.classList.add('open');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.textContent = '−';
+                }
+            });
+        }
+
+        function initMapPulse() {
+            const path = document.getElementById('rescuePath');
+            const dot = document.getElementById('rescueDot');
+            if (!path || !dot) return;
+
+            const total = path.getTotalLength();
+            let progress = 0;
+
+            const step = () => {
+                progress += 1.15;
+                if (progress > total) progress = 0;
+                const point = path.getPointAtLength(progress);
+                dot.setAttribute('cx', point.x);
+                dot.setAttribute('cy', point.y);
+                requestAnimationFrame(step);
+            };
+
+            requestAnimationFrame(step);
+        }
+
+        function initLiveCardRefresh() {
+            const alerts = [
+                ['Hurricane Alert', 'MV Extension, Hoskote', '09:12 IST', 'low', 'Low intensity'],
+                ['Flood Alert', 'Koramangala Drain Belt', '10:28 IST', 'medium', 'Severe'],
+                ['Earthquake Alert', 'South Sector Line-3', '11:47 IST', 'high', 'High intensity'],
+                ['Landslide Alert', 'Outer Ring Slope Zone', '12:05 IST', 'medium', 'Severe']
+            ];
+
+            const feed = document.getElementById('alertFeed');
+            if (!feed) return;
+
+            let idx = 0;
+            setInterval(() => {
+                idx = (idx + 1) % alerts.length;
+                const [title, place, time, level, tag] = alerts[idx];
+
+                const card = document.createElement('article');
+                card.className = `alert-card ${level}`;
+                card.innerHTML = `
+                    <div class="alert-head">
+                        <h3>${title}</h3>
+                        <span class="tag ${level}">${tag}</span>
+                    </div>
+                    <div class="alert-meta">
+                        <span>📍 ${place}</span>
+                        <span>🕒 ${time}</span>
+                    </div>
+                    <div class="alert-actions">
+                        <div class="mini-btn">Share</div>
+                        <div class="mini-btn">Listen</div>
+                        <div class="mini-btn">Dos & Dont's</div>
+                    </div>
+                `;
+
+                feed.prepend(card);
+                if (feed.children.length > 2) feed.removeChild(feed.lastElementChild);
+            }, 5200);
+        }
+
+        function initDetailsProgress() {
+            const bar = document.getElementById('progressBar');
+            const etaText = document.getElementById('etaText');
+            const distanceText = document.getElementById('distanceText');
+            if (!bar || !etaText || !distanceText) return;
+
+            let progress = 28;
+            let eta = 11;
+            let distance = 2.8;
+
+            const tick = () => {
+                progress = Math.min(progress + 4, 100);
+                eta = Math.max(eta - 1, 3);
+                distance = Math.max(distance - 0.2, 0.8);
+
+                bar.style.width = `${progress}%`;
+                etaText.textContent = `ETA ${eta}m`;
+                distanceText.textContent = `${distance.toFixed(1)} km away`;
+
+                if (progress >= 100) {
+                    progress = 28;
+                    eta = 11;
+                    distance = 2.8;
+                }
+            };
+
+            tick();
+            setInterval(tick, 2500);
+        }
+
+        function initAlertListRefresh() {
+            const list = document.getElementById('alertList');
+            if (!list) return;
+
+            const items = [
+                ['Earthquake Alert • South Sector Line-3', 'High', '11:47 IST', '2.8 km', 'high'],
+                ['Flood Alert • Koramangala Drain Belt', 'Severe', '10:28 IST', '4.4 km', 'medium'],
+                ['Cyclone Alert • East Fringe Belt', 'Severe', '12:10 IST', '6.1 km', 'medium'],
+                ['Hurricane Alert • MV Extension, Hoskote', 'Low', '09:12 IST', '7.2 km', 'low']
+            ];
+
+            let index = 0;
+            setInterval(() => {
+                index = (index + 1) % items.length;
+                const [title, level, time, dist, severity] = items[index];
+
+                const article = document.createElement('article');
+                article.className = 'list-item';
+                article.innerHTML = `
+                    <div class="list-head">
+                        <h4>${title}</h4>
+                        <span class="tag ${severity}">${level}</span>
+                    </div>
+                    <div class="list-meta"><span>${time}</span><span>${dist}</span></div>
+                `;
+
+                list.prepend(article);
+                if (list.children.length > 3) list.removeChild(list.lastElementChild);
+            }, 6200);
+        }
+
+        function initNavigation() {
+            document.querySelectorAll('.nav button').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    switchScreen(btn.dataset.targetScreen);
+                });
+            });
+        }
+
+        function initSosFlow() {
+            document.querySelectorAll('.sos').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    window.location.href = 'sos-mobile.html';
+                });
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCounters();
+            initAccordion('accordion');
+            initMapPulse();
+            initLiveCardRefresh();
+            initDetailsProgress();
+            initAlertListRefresh();
+            initNavigation();
+            initSosFlow();
+            switchScreen('home');
+        });
+    </script>
+</body>
+</html>

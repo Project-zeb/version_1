@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Disaster Guard • Home Mobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js" defer></script>
+    <style>
+        :root { --bg:#edf3f9; --phone:#f9fbfe; --text:#16253b; --muted:#7c8ea9; --line:#dce6f2; --blue:#2f86ff; --green:#2dc98c; --orange:#ffb347; --red:#ff6b63; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Inter,sans-serif; background:linear-gradient(180deg,#eaf1f8,#f4f7fc); min-height:100vh; display:grid; place-items:center; padding:20px 12px; color:var(--text); }
+        .phone { width:min(100%,392px); height:min(840px,95vh); border-radius:34px; border:1px solid #d8e3ef; background:var(--phone); box-shadow:0 22px 50px rgba(96,126,163,.25); overflow:hidden; position:relative; }
+        .status-notch { height:28px; display:flex; justify-content:center; align-items:center; }
+        .notch { width:120px; height:28px; border-radius:0 0 16px 16px; background:#e4edf7; }
+        .app { height:calc(100% - 100px); overflow:auto; padding:14px 14px 90px; display:grid; gap:12px; }
+        .topbar { display:flex; justify-content:space-between; align-items:start; gap:8px; }
+        .location small { display:block; color:var(--muted); font-size:.72rem; font-weight:600; }
+        .location strong { font-size:.95rem; }
+        .icons { display:flex; gap:8px; }
+        .circle { width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:#fff; display:grid; place-items:center; color:#5b6f8e; font-size:.88rem; }
+        .search { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#fff; }
+        .search input { border:none; outline:none; width:100%; background:transparent; color:#3d5272; font-size:.86rem; }
+        .title { font-size:.86rem; font-weight:700; color:#405a7f; display:flex; justify-content:space-between; align-items:center; }
+        .live-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 4px rgba(45,201,140,.2); display:inline-block; margin-right:6px; }
+        .alerts { display:grid; gap:10px; }
+        .card { border-radius:16px; padding:11px; border:1px solid transparent; display:grid; gap:8px; }
+        .low { background:#eaf2ff; border-color:#cfe0ff; }
+        .medium { background:#fff3e2; border-color:#f9d8aa; }
+        .head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .head h3 { font-size:.94rem; }
+        .tag { border-radius:999px; font-size:.66rem; font-weight:700; padding:3px 8px; }
+        .tag.low { background:#deebff; color:#1e5fb3; }
+        .tag.medium { background:#ffe8c2; color:#915b0f; }
+        .meta { display:flex; flex-wrap:wrap; gap:10px; font-size:.72rem; color:#5b7395; font-weight:600; }
+        .actions { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+        .mini { border:1px solid rgba(26,61,111,.14); background:rgba(255,255,255,.7); border-radius:8px; padding:6px 0; text-align:center; font-size:.68rem; color:#36557d; font-weight:600; }
+        .map { border-radius:16px; border:1px solid #d2e4f9; background:#edf6ff; height:170px; position:relative; overflow:hidden; }
+        .map svg { width:100%; height:100%; display:block; }
+        .badge { position:absolute; top:10px; left:10px; background:rgba(255,255,255,.86); border:1px solid #d6e6f8; border-radius:999px; padding:4px 8px; font-size:.68rem; font-weight:700; color:#335781; }
+        .stats { border-radius:16px; border:1px solid var(--line); background:#fff; padding:10px; display:grid; gap:8px; }
+        .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+        .stat { border-radius:10px; background:#f5f9ff; border:1px solid #dfebf9; padding:8px; text-align:center; }
+        .stat small { color:#6684aa; font-size:.67rem; display:block; margin-bottom:4px; font-weight:600; }
+        .stat strong { color:#1f4779; font-size:.98rem; }
+        .sos { border:none; border-radius:12px; padding:11px 14px; width:100%; color:#fff; background:linear-gradient(135deg,#ff6f66,#ff4f58); font-weight:800; letter-spacing:.2px; }
+        .nav { position:absolute; left:0; right:0; bottom:0; height:72px; background:rgba(255,255,255,.92); border-top:1px solid #dbe7f5; display:grid; grid-template-columns:repeat(3,1fr); padding:8px 10px 12px; }
+        .nav a, .nav button { text-decoration:none; color:#6986ac; display:grid; place-items:center; gap:4px; font-size:.66rem; font-weight:700; border:none; background:transparent; }
+        .nav a span:first-child { font-size:1rem; }
+        .nav a.active { color:var(--blue); }
+        .sos-nav { color:#c23d46 !important; font-weight:800 !important; }
+        .sos-core {
+            width:44px;
+            height:44px;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:linear-gradient(135deg,#ff6f66,#ff4f58);
+            color:#fff;
+            box-shadow:0 8px 14px rgba(255,91,97,.28);
+            font-size:.78rem;
+            letter-spacing:.3px;
+            position:relative;
+            animation:sosBeat 1.5s ease-in-out infinite;
+        }
+        .sos-core::after {
+            content:"";
+            position:absolute;
+            inset:-6px;
+            border-radius:50%;
+            border:2px solid rgba(255,95,102,.32);
+            animation:sosRing 1.5s ease-out infinite;
+        }
+        @keyframes sosBeat {
+            0%, 100% { transform:scale(1); }
+            45% { transform:scale(1.09); }
+        }
+        @keyframes sosRing {
+            0% { transform:scale(.92); opacity:.7; }
+            100% { transform:scale(1.22); opacity:0; }
+        }
+        .sos-popup {
+            position:absolute;
+            left:50%;
+            transform:translateX(-50%);
+            bottom:84px;
+            border:1px solid #ffc6c2;
+            background:#fff3f2;
+            color:#a53f45;
+            border-radius:11px;
+            font-size:.74rem;
+            font-weight:700;
+            padding:8px 11px;
+            display:none;
+            z-index:7;
+            white-space:nowrap;
+            box-shadow:0 10px 20px rgba(196,95,101,.2);
+        }
+        .sos-popup.show { display:block; }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <div class="status-notch"><div class="notch"></div></div>
+        <main class="app">
+            <header class="topbar">
+                <div class="location"><small>Region</small><strong>Bengaluru • Electronic City</strong></div>
+                <div class="icons"><button class="circle">🔔</button><button class="circle">👤</button></div>
+            </header>
+            <div class="search"><span>🔎</span><input type="text" placeholder="Search" /></div>
+            <div class="title"><span><span class="live-dot"></span>Active Alerts</span><span style="font-size:.73rem;color:#6f88a8;font-weight:600;">Updated now</span></div>
+
+            <section class="alerts" id="alertFeed">
+                <article class="card low">
+                    <div class="head"><h3>Hurricane Alert</h3><span class="tag low">Low intensity</span></div>
+                    <div class="meta"><span>📍 MV Extension, Hoskote</span><span>🕒 09:12 IST</span></div>
+                    <div class="actions"><div class="mini">Share</div><div class="mini">Listen</div><div class="mini">Dos & Dont's</div></div>
+                </article>
+                <article class="card medium">
+                    <div class="head"><h3>Flood Alert</h3><span class="tag medium">Severe</span></div>
+                    <div class="meta"><span>📍 Koramangala Drain Belt</span><span>🕒 10:28 IST</span></div>
+                    <div class="actions"><div class="mini">Share</div><div class="mini">Listen</div><div class="mini">Dos & Dont's</div></div>
+                </article>
+            </section>
+
+            <section class="map">
+                <span class="badge">Rescue nodes tracking active</span>
+                <svg viewBox="0 0 640 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="640" height="280" fill="#DDF0FF" />
+                    <path d="M16 66L122 38L196 78L278 44L364 86L448 55L526 84L620 48V232L530 254L448 226L370 252L290 220L208 242L126 214L16 240V66Z" fill="#B7DBFC" />
+                    <path d="M62 104L162 86L242 116L334 94L420 122L538 98" stroke="#7CB8EA" stroke-width="4" stroke-linecap="round" />
+                    <circle cx="244" cy="148" r="10" fill="#FF6B63" />
+                    <circle cx="334" cy="116" r="10" fill="#FF6B63" />
+                    <circle cx="422" cy="168" r="10" fill="#FF6B63" />
+                </svg>
+            </section>
+
+            <section class="stats" id="statsBlock">
+                <div class="title"><span>Last 1-Year Impact</span><span style="font-size:.72rem;color:#6f88a8;font-weight:600;">Dynamic data</span></div>
+                <div class="grid">
+                    <div class="stat"><small>Events</small><strong data-target="312">0</strong></div>
+                    <div class="stat"><small>Deaths</small><strong data-target="18940">0</strong></div>
+                    <div class="stat"><small>Loss</small><strong data-target="67.4" data-prefix="$" data-suffix="B">0</strong></div>
+                </div>
+            </section>
+
+            <button class="sos">SOS CALL</button>
+        </main>
+        <nav class="nav">
+            <a href="home-mobile.html" class="active"><span>🏠</span><span>Home</span></a>
+            <button id="sosNavBtn" class="sos-nav" aria-label="SOS"><span class="sos-core">SOS</span></button>
+            <a href="alerts-mobile.html"><span>🚨</span><span>Alerts</span></a>
+        </nav>
+        <div class="sos-popup" id="sosPopup">Emergency details sending...</div>
+    </section>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.CountUp) {
+                document.querySelectorAll('[data-target]').forEach((el) => {
+                    const target = Number(el.dataset.target);
+                    const decimals = String(target).includes('.') ? 1 : 0;
+                    const c = new window.CountUp.CountUp(el, target, {
+                        duration: 2,
+                        decimalPlaces: decimals,
+                        separator: ',',
+                        prefix: el.dataset.prefix || '',
+                        suffix: el.dataset.suffix || ''
+                    });
+                    if (!c.error) c.start();
+                });
+            }
+
+            const sosBtn = document.getElementById('sosNavBtn');
+            const sosPopup = document.getElementById('sosPopup');
+            let pressTimer;
+            let longPressTriggered = false;
+
+            const startPress = () => {
+                longPressTriggered = false;
+                pressTimer = setTimeout(() => {
+                    longPressTriggered = true;
+                    sosPopup.classList.add('show');
+                    setTimeout(() => {
+                        sosPopup.classList.remove('show');
+                        window.location.href = 'sos-mobile.html?sos=active';
+                    }, 900);
+                }, 700);
+            };
+
+            const cancelPress = () => {
+                clearTimeout(pressTimer);
+            };
+
+            sosBtn.addEventListener('pointerdown', startPress);
+            sosBtn.addEventListener('pointerup', () => {
+                cancelPress();
+                if (!longPressTriggered) {
+                    window.location.href = 'sos-mobile.html';
+                }
+            });
+            sosBtn.addEventListener('pointerleave', cancelPress);
+            sosBtn.addEventListener('pointercancel', cancelPress);
+
+            document.querySelectorAll('.sos').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    window.location.href = 'sos-mobile.html';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

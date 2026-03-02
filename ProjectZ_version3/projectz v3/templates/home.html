@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello home
+    </h1>
+    <div>
+        <a
+          href="{{ url_for('get_weather_grid') }}"
+          class="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg text-lg font-medium shadow-md hover:bg-indigo-700 transition"
+        >
+            Get weather data
+
+           <h1>{{user_info['name']}}</h1> 
+        </a>
+      </div>
+</body>
+</html>

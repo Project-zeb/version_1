@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SOS Basic</title>
+    <style>
+        :root {
+            --bg:#f5f7fb;
+            --card:#ffffff;
+            --text:#1f2430;
+            --muted:#6e7685;
+            --border:#dce3ee;
+            --brand:#e24b58;
+            --brand-dark:#c63d49;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+
+        .card {
+            width: min(100%, 420px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 12px 24px rgba(22, 34, 58, 0.08);
+            display: grid;
+            gap: 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .help {
+            margin: 0;
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        label {
+            font-size: .85rem;
+            font-weight: 700;
+        }
+
+        select, .location-box {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: .95rem;
+            background: #fff;
+        }
+
+        .location-box {
+            color: #2e3a50;
+            min-height: 48px;
+        }
+
+        .actions {
+            display: grid;
+            gap: 8px;
+        }
+
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 12px;
+            font-size: .95rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .secondary {
+            background: #eff4fb;
+            color: #3b4e6e;
+            border: 1px solid #d7e1f1;
+        }
+
+        .primary {
+            background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+            color: #fff;
+        }
+
+        .primary:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin: 0;
+            font-size: .83rem;
+            color: var(--muted);
+            min-height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>SOS Basic</h1>
+        <p class="help">Select disaster type, detect live location, then send SMS alert.</p>
+
+        <div>
+            <label for="disasterType">Disaster type</label>
+            <select id="disasterType" required>
+                <option value="">Select type</option>
+                <option value="Earthquake">Earthquake</option>
+                <option value="Flood">Flood</option>
+                <option value="Fire">Fire</option>
+                <option value="Medical">Medical</option>
+                <option value="Landslide">Landslide</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Live location</label>
+            <div class="location-box" id="locationText">Detecting location...</div>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="secondary" id="detectBtn">Detect location</button>
+            <button type="button" class="primary" id="smsBtn" disabled>Send SOS SMS</button>
+        </div>
+
+        <p class="status" id="statusText">Waiting for disaster type and location.</p>
+    </main>
+
+    <script>
+        const SOS_SMS_NUMBER = '+918700523035';
+        const disasterType = document.getElementById('disasterType');
+        const locationText = document.getElementById('locationText');
+        const detectBtn = document.getElementById('detectBtn');
+        const smsBtn = document.getElementById('smsBtn');
+        const statusText = document.getElementById('statusText');
+
+        let coords = null;
+        let addressLabel = 'Location unavailable';
+
+        const setButtonState = () => {
+            const canSend = Boolean(disasterType.value) && Boolean(coords);
+            smsBtn.disabled = !canSend;
+            if (canSend) {
+                statusText.textContent = 'Ready to send SOS SMS.';
+            } else {
+                statusText.textContent = 'Waiting for disaster type and location.';
+            }
+        };
+
+        const setCoords = (lat, lon) => {
+            coords = { lat, lon };
+            locationText.textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+            setButtonState();
+        };
+
+        const reverseGeocode = async (lat, lon) => {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+                const data = await response.json();
+                if (data && data.display_name) {
+                    addressLabel = data.display_name;
+                    locationText.textContent = data.display_name;
+                }
+            } catch (error) {
+            }
+        };
+
+        const detectLocation = () => {
+            if (!navigator.geolocation) {
+                statusText.textContent = 'Geolocation not supported.';
+                return;
+            }
+
+            statusText.textContent = 'Detecting live location...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    setCoords(lat, lon);
+                    addressLabel = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                    reverseGeocode(lat, lon);
+                },
+                () => {
+                    statusText.textContent = 'Unable to get location. Enable GPS and retry.';
+                },
+                { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+            );
+        };
+
+        const buildMessage = () => {
+            const type = disasterType.value || 'Emergency';
+            const coordsText = coords ? `${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}` : 'N/A';
+            const map = coords ? `https://maps.google.com/?q=${coords.lat},${coords.lon}` : 'N/A';
+            return [
+                'HELP! I am in disaster.',
+                `Disaster type: ${type}`,
+                `Location: ${addressLabel}`,
+                `Coordinates: ${coordsText}`,
+                `Map: ${map}`
+            ].join('\n');
+        };
+
+        detectBtn.addEventListener('click', detectLocation);
+        disasterType.addEventListener('change', setButtonState);
+
+        smsBtn.addEventListener('click', () => {
+            if (!disasterType.value || !coords) {
+                setButtonState();
+                return;
+            }
+            const body = encodeURIComponent(buildMessage());
+            window.location.href = `sms:${SOS_SMS_NUMBER}?&body=${body}`;
+        });
+
+        detectLocation();
+        setButtonState();
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+.venv*/
+**/.venv*/
+venv/
+env/
+
+# Environments and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Databases and local runtime files
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+instance/
+
+# Logs and temp
+*.log
+*.tmp
+*.swp
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Project-specific backups/rollbacks
+.rollback_backup_*/
+
+# Build/cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
