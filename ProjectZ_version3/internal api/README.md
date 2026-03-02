@@ -27,6 +27,19 @@ python scripts/generate_api_key.py
 python run.py
 ```
 
+### Windows notes
+
+For a Windows development machine the root of the repository includes helper scripts (`projectz v3\scripts\setup_windows.bat` etc.) that will create a virtual
+environment and copy the example `.env` file.  After running the setup batch file, edit `"internal api\.env"` to add the keys, then start the service with
+
+```powershell
+cd "internal api"
+.\.venv\Scripts\activate.ps1   # or activate.bat from cmd
+python run.py
+```
+
+The helpers are simple wrappers and can be inspected before use; they exist only to save a few keystrokes.
+
 Server: `http://localhost:5000`
 
 ## 3) Authentication modes
