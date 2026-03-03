@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Server Health</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --phone:#f9f4f5; --line:#e8dcdf; --text:#1f2632; --muted:#7d8595; --accent:#ff5e66; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Inter,sans-serif; background:linear-gradient(180deg,#eaf1f8,#f4f7fc); min-height:100vh; display:grid; place-items:center; padding:20px 12px; color:var(--text); overflow-x:hidden; }
+        .phone { width:min(100%,420px); height:min(900px,96vh); border-radius:30px; border:1px solid #d8e3ef; background:var(--phone); box-shadow:0 22px 50px rgba(96,126,163,.25); overflow:hidden; display:flex; flex-direction:column; }
+        .head { padding:14px; border-bottom:1px solid var(--line); background:#fff7f8; display:grid; gap:10px; overflow-x:hidden; }
+        .head h1 { font-size:1.05rem; line-height:1.2; }
+        .row { display:grid; grid-template-columns:minmax(0,1fr) minmax(72px,96px) minmax(72px,88px); gap:8px; align-items:stretch; }
+        .row2 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+        .row3 { display:grid; grid-template-columns:minmax(0,1fr) minmax(120px,180px); gap:8px; align-items:center; }
+        .input, .select { border:1px solid #eadde0; border-radius:10px; padding:8px 10px; font-size:.8rem; background:#fff; outline:none; width:100%; min-width:0; }
+        .btn { border:none; border-radius:10px; background:linear-gradient(135deg,#ff6f66,#ff4f58); color:#fff; font-size:.78rem; font-weight:800; padding:9px 12px; cursor:pointer; }
+        .btn.secondary { background:#fff; color:#b14d58; border:1px solid #efc8cd; }
+        .meta { font-size:.72rem; color:var(--muted); font-weight:600; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+        .meta-left { display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap; width:100%; }
+        .source-pill { border:1px solid #e6d8dc; border-radius:999px; padding:2px 8px; font-size:.64rem; font-weight:800; text-transform:uppercase; letter-spacing:.02em; white-space:normal; overflow-wrap:anywhere; max-width:100%; text-align:center; background:#fff; color:#8b5f69; }
+        .source-pill.internal { border-color:#c9e5d1; color:#1f7a3b; background:#f0fff4; }
+        .source-pill.fallback { border-color:#ecd9c5; color:#a24f1b; background:#fff7ed; }
+        .source-pill.unknown { border-color:#e5e7eb; color:#64748b; background:#f8fafc; }
+        .channel-pill { border:1px solid #e5e7eb; border-radius:999px; padding:2px 8px; font-size:.64rem; font-weight:800; text-transform:uppercase; letter-spacing:.02em; white-space:normal; overflow-wrap:anywhere; max-width:100%; text-align:center; background:#f8fafc; color:#64748b; }
+        .channel-pill.up { border-color:#c9e5d1; color:#1f7a3b; background:#f0fff4; }
+        .channel-pill.down { border-color:#f5c6cb; color:#a33440; background:#fff1f3; }
+        .channel-pill.used { border-color:#bfd7ff; color:#1f5fbf; background:#edf4ff; }
+        .diag-tools { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+        .diag-btn { border:1px solid #eadde0; border-radius:8px; background:#fff; color:#4d607d; padding:6px 10px; font-size:.67rem; font-weight:800; cursor:pointer; }
+        .diag-btn:disabled { opacity:.65; cursor:default; }
+        .sync-banner { border:1px solid #e7dce0; border-radius:10px; background:#fff; padding:8px 10px; display:grid; gap:5px; }
+        .sync-banner-top { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+        .sync-banner-title { font-size:.64rem; color:#7e6d77; text-transform:uppercase; letter-spacing:.04em; font-weight:800; }
+        .sync-banner-times, .sync-banner-detail { font-size:.68rem; color:#51627d; overflow-wrap:anywhere; }
+        .diag-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+        .diag-card { border:1px solid #e7dce0; border-radius:10px; background:#fff; padding:8px; display:grid; gap:4px; min-width:0; }
+        .diag-label { font-size:.62rem; color:#7e6d77; text-transform:uppercase; letter-spacing:.04em; font-weight:800; }
+        .diag-value { font-size:.8rem; font-weight:800; color:#2f3f5a; }
+        .diag-sub { font-size:.67rem; color:#6e7f98; overflow-wrap:anywhere; }
+        .diag-wide { grid-column:1 / -1; }
+        .diag-list { display:grid; gap:4px; max-height:120px; overflow:auto; padding-right:2px; }
+        .diag-item { font-size:.68rem; color:#51627d; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; }
+        .diag-item span:first-child { overflow-wrap:anywhere; }
+        .diag-item span:last-child { white-space:normal; overflow-wrap:anywhere; text-align:right; }
+        .diag-sync-state { display:inline-flex; align-items:center; border-radius:999px; border:1px solid #d1d5db; padding:3px 8px; font-size:.66rem; font-weight:800; width:max-content; text-transform:uppercase; letter-spacing:.03em; }
+        .diag-sync-state.success { border-color:#bbf7d0; color:#166534; background:#f0fdf4; }
+        .diag-sync-state.nodata { border-color:#bfdbfe; color:#1d4ed8; background:#eff6ff; }
+        .diag-sync-state.fault { border-color:#fecaca; color:#b91c1c; background:#fef2f2; }
+        .content { flex:1; min-height:0; overflow:auto; padding:10px; display:grid; gap:8px; }
+        .card { border:1px solid #e4dce1; border-radius:12px; background:#fff; padding:10px; display:grid; gap:6px; }
+        .top { display:flex; justify-content:space-between; gap:8px; align-items:center; }
+        .title { font-size:.87rem; font-weight:800; color:#2f3f5a; }
+        .sev { border-radius:999px; padding:3px 8px; font-size:.66rem; font-weight:800; color:#fff; text-transform:uppercase; }
+        .sev.red { background:#dc2626; }
+        .sev.yellow { background:#ca8a04; }
+        .sev.orange { background:#ea580c; }
+        .sev.green { background:#16a34a; }
+        .sev.default { background:#64748b; }
+        .line { font-size:.74rem; color:#55627a; }
+        .empty { border:1px dashed #d8cfd5; border-radius:12px; padding:14px; color:#7e6f77; font-size:.8rem; text-align:center; background:#fff; }
+        .link { color:#b14d58; font-weight:700; text-decoration:none; font-size:.75rem; }
+
+        @media (max-width: 768px) {
+            body {
+                display:block;
+                padding:0;
+            }
+
+            .phone {
+                width:100%;
+                max-width:none;
+                height:100dvh;
+                min-height:100dvh;
+                border:none;
+                border-radius:0;
+                box-shadow:none;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .row {
+                grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+
+            .row > :first-child {
+                grid-column:1 / -1;
+            }
+
+            .row2 {
+                grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+
+            .row2 > :last-child {
+                grid-column:1 / -1;
+            }
+
+            .row3 {
+                grid-template-columns:repeat(2,minmax(0,1fr));
+            }
+
+            .diag-item {
+                grid-template-columns:1fr;
+                gap:2px;
+            }
+
+            .diag-item span:last-child {
+                text-align:left;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .row,
+            .row2,
+            .row3,
+            .diag-grid {
+                grid-template-columns:1fr;
+            }
+
+            .diag-tools {
+                justify-content:flex-start;
+            }
+
+            .meta {
+                flex-direction:column;
+                align-items:flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <header class="head">
+            <h1>Server Health</h1>
+            <div class="row">
+                <input id="stateInput" class="input" type="text" placeholder="India / Delhi / Kerala" value="India" />
+                <input id="limitInput" class="input" type="number" min="10" max="500" value="80" />
+                <button id="loadBtn" class="btn" type="button">Load</button>
+            </div>
+            <div class="row2">
+                <select id="typeInput" class="select">
+                    <option value="all">All Types</option>
+                    <option value="Cyclonic">Cyclonic</option>
+                    <option value="Landslide">Landslide</option>
+                    <option value="Flood">Flood</option>
+                    <option value="Earthquake">Earthquake</option>
+                    <option value="Pre Fire">Pre Fire</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Light Rain">Light Rain</option>
+                    <option value="Moderate Rain">Moderate Rain</option>
+                    <option value="Thunderstorm">Thunderstorm</option>
+                    <option value="Heavy Rain">Heavy Rain</option>
+                    <option value="Heat Wave">Heat Wave</option>
+                </select>
+                <select id="severityInput" class="select">
+                    <option value="all">All Severity</option>
+                    <option value="ALERT">ALERT</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="WATCH">WATCH</option>
+                </select>
+                <input id="dateInput" class="input" type="date" />
+            </div>
+            <div class="row3">
+                <select id="policyInput" class="select" title="Data source policy">
+                    <option value="live_only">Always Live</option>
+                    <option value="auto_fallback">Auto Fallback</option>
+                </select>
+                <button id="clearBtn" class="btn secondary" type="button">Clear Filters</button>
+            </div>
+            <div class="meta">
+                <div class="meta-left">
+                    <span id="statusText">Waiting for data...</span>
+                    <span id="sourceModeBadge" class="source-pill unknown">Source: --</span>
+                    <span id="liveStatusBadge" class="channel-pill">Live: --</span>
+                    <span id="fallbackStatusBadge" class="channel-pill">Fallback: --</span>
+                </div>
+                <a class="link" href="{{ url_for('mobile_home') }}">Back to Home</a>
+            </div>
+            <div class="sync-banner">
+                <div class="sync-banner-top">
+                    <span class="sync-banner-title">Sync Monitor</span>
+                    <div id="diagSyncState" class="diag-sync-state">Checking...</div>
+                </div>
+                <div id="diagSyncTimes" class="sync-banner-times">Auto sync every 5 min • Last try: -- • Last success: --</div>
+                <div id="diagSyncDetail" class="sync-banner-detail">Latest result: checking...</div>
+            </div>
+            <div class="diag-tools">
+                <button id="diagRefreshBtn" class="diag-btn" type="button">Refresh Diagnostics</button>
+                <button id="forceSyncBtn" class="diag-btn" type="button">Force Sync</button>
+            </div>
+            <div class="diag-grid">
+                <article class="diag-card">
+                    <div class="diag-label">Pipeline Mode</div>
+                    <div id="diagPipelineMode" class="diag-value">--</div>
+                    <div id="diagPipelineHint" class="diag-sub">Waiting...</div>
+                </article>
+                <article class="diag-card">
+                    <div class="diag-label">Server Time</div>
+                    <div id="diagServerTime" class="diag-value">--</div>
+                    <div id="diagGeneratedAt" class="diag-sub">Generated: --</div>
+                </article>
+                <article class="diag-card">
+                    <div class="diag-label">Last Source Success</div>
+                    <div id="diagLastSourceSuccess" class="diag-value">--</div>
+                    <div id="diagLastSourceAttempt" class="diag-sub">Last attempt: --</div>
+                </article>
+                <article class="diag-card">
+                    <div class="diag-label">Last Alert Ingest</div>
+                    <div id="diagLatestAlertAt" class="diag-value">--</div>
+                    <div id="diagLatestAlertSource" class="diag-sub">Source: --</div>
+                </article>
+                <article class="diag-card">
+                    <div class="diag-label">SQLite Main</div>
+                    <div id="diagMainSqliteSize" class="diag-value">--</div>
+                    <div id="diagMainSqliteRows" class="diag-sub">Rows: --</div>
+                </article>
+                <article class="diag-card">
+                    <div class="diag-label">SQLite Internal API</div>
+                    <div id="diagInternalSqliteSize" class="diag-value">--</div>
+                    <div id="diagInternalSqliteRows" class="diag-sub">Rows: --</div>
+                </article>
+                <article class="diag-card diag-wide">
+                    <div class="diag-label">Total SQLite Stored</div>
+                    <div id="diagTotalSqliteSize" class="diag-value">--</div>
+                    <div id="diagStorageHint" class="diag-sub">Computed from local sqlite files.</div>
+                </article>
+                <article class="diag-card diag-wide">
+                    <div class="diag-label">Source Runners</div>
+                    <div id="diagSourceRunSummary" class="diag-sub">--</div>
+                    <div id="diagSourceRunList" class="diag-list"></div>
+                </article>
+            </div>
+        </header>
+
+        <main id="list" class="content"></main>
+    </section>
+
+    <script>
+        const stateInput = document.getElementById('stateInput');
+        const limitInput = document.getElementById('limitInput');
+        const typeInput = document.getElementById('typeInput');
+        const severityInput = document.getElementById('severityInput');
+        const dateInput = document.getElementById('dateInput');
+        const policyInput = document.getElementById('policyInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        const statusText = document.getElementById('statusText');
+        const sourceModeBadge = document.getElementById('sourceModeBadge');
+        const liveStatusBadge = document.getElementById('liveStatusBadge');
+        const fallbackStatusBadge = document.getElementById('fallbackStatusBadge');
+        const list = document.getElementById('list');
+        const forceLiveMode = window.location.pathname === '/mobile/hill90';
+
+        const diagRefreshBtn = document.getElementById('diagRefreshBtn');
+        const forceSyncBtn = document.getElementById('forceSyncBtn');
+        const diagPipelineMode = document.getElementById('diagPipelineMode');
+        const diagPipelineHint = document.getElementById('diagPipelineHint');
+        const diagServerTime = document.getElementById('diagServerTime');
+        const diagGeneratedAt = document.getElementById('diagGeneratedAt');
+        const diagLastSourceSuccess = document.getElementById('diagLastSourceSuccess');
+        const diagLastSourceAttempt = document.getElementById('diagLastSourceAttempt');
+        const diagLatestAlertAt = document.getElementById('diagLatestAlertAt');
+        const diagLatestAlertSource = document.getElementById('diagLatestAlertSource');
+        const diagMainSqliteSize = document.getElementById('diagMainSqliteSize');
+        const diagMainSqliteRows = document.getElementById('diagMainSqliteRows');
+        const diagInternalSqliteSize = document.getElementById('diagInternalSqliteSize');
+        const diagInternalSqliteRows = document.getElementById('diagInternalSqliteRows');
+        const diagTotalSqliteSize = document.getElementById('diagTotalSqliteSize');
+        const diagStorageHint = document.getElementById('diagStorageHint');
+        const diagSourceRunSummary = document.getElementById('diagSourceRunSummary');
+        const diagSourceRunList = document.getElementById('diagSourceRunList');
+        const diagSyncState = document.getElementById('diagSyncState');
+        const diagSyncTimes = document.getElementById('diagSyncTimes');
+        const diagSyncDetail = document.getElementById('diagSyncDetail');
+
+        let latestSourceMode = '';
+        let latestGeneratedAt = '';
+        const HILL90_AUTO_REFRESH_MS = 5 * 60 * 1000;
+
+        const sevClass = (value) => {
+            const s = String(value || '').toLowerCase();
+            if (s === 'red') return 'red';
+            if (s === 'yellow') return 'yellow';
+            if (s === 'orange') return 'orange';
+            if (s === 'green') return 'green';
+            return 'default';
+        };
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        const parseTimestamp = (value) => {
+            const text = String(value || '').trim();
+            if (!text) return null;
+
+            const direct = new Date(text);
+            if (!Number.isNaN(direct.getTime())) return direct;
+
+            const istMatch = text.match(/^([A-Za-z]{3})\s([A-Za-z]{3})\s(\d{1,2})\s(\d{2}):(\d{2})(?::(\d{2}))?\sIST\s(\d{4})$/);
+            if (!istMatch) return null;
+
+            const monthMap = {
+                jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+                jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+            };
+            const month = monthMap[String(istMatch[2] || '').toLowerCase()];
+            if (month === undefined) return null;
+
+            const day = Number(istMatch[3]);
+            const hour = Number(istMatch[4]);
+            const minute = Number(istMatch[5]);
+            const second = Number(istMatch[6] || '0');
+            const year = Number(istMatch[7]);
+            const utcMillis = Date.UTC(year, month, day, hour, minute, second) - (5.5 * 60 * 60 * 1000);
+            const parsed = new Date(utcMillis);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+
+        const toEpoch = (value) => {
+            const parsed = parseTimestamp(value);
+            return parsed ? parsed.getTime() : null;
+        };
+
+        const formatDateTime = (value) => {
+            const parsed = parseTimestamp(value);
+            if (!parsed) return String(value || 'N/A');
+            return parsed.toLocaleString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+
+        const prettyCoords = (lat, lon) => {
+            if (typeof lat === 'number' && typeof lon === 'number' && Number.isFinite(lat) && Number.isFinite(lon)) {
+                return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            }
+            return 'Not available';
+        };
+
+        const render = (alerts) => {
+            if (!alerts.length) {
+                list.innerHTML = '<div class="empty">No alerts found for this filter.</div>';
+                return;
+            }
+
+            list.innerHTML = alerts.map((a) => `
+                <article class="card">
+                    <div class="top">
+                        <div class="title">${escapeHtml(a.type || 'Alert')}</div>
+                        <span class="sev ${sevClass(a.severity_color)}">${escapeHtml(a.severity || 'watch')}</span>
+                    </div>
+                    <div class="line"><strong>Area:</strong> ${escapeHtml(a.area || '-')}</div>
+                    <div class="line"><strong>Category:</strong> ${escapeHtml(a.category || '-')}</div>
+                    <div class="line"><strong>Source:</strong> ${escapeHtml(a.source || '-')}</div>
+                    <div class="line"><strong>Time:</strong> ${escapeHtml(formatDateTime(a.start_time))} → ${escapeHtml(formatDateTime(a.end_time))}</div>
+                    <div class="line"><strong>Coords:</strong> ${escapeHtml(prettyCoords(a.lat, a.lon))}</div>
+                    <div class="line"><strong>ID:</strong> ${escapeHtml(a.id || '-')}</div>
+                </article>
+            `).join('');
+        };
+
+        const setSourceMode = (modeValue) => {
+            const mode = String(modeValue || '').toLowerCase();
+            sourceModeBadge.className = 'source-pill unknown';
+
+            if (mode === 'internal_api') {
+                sourceModeBadge.className = 'source-pill internal';
+                sourceModeBadge.textContent = 'Source: Live API';
+                return;
+            }
+
+            if (mode === 'file_fallback') {
+                sourceModeBadge.className = 'source-pill fallback';
+                sourceModeBadge.textContent = 'Source: Fallback File';
+                return;
+            }
+
+            if (mode === 'internal_unavailable') {
+                sourceModeBadge.className = 'source-pill fallback';
+                sourceModeBadge.textContent = 'Source: Live Unavailable';
+                return;
+            }
+
+            sourceModeBadge.textContent = 'Source: --';
+        };
+
+        const setChannelStatus = (modeValue, requestOk = true) => {
+            const mode = String(modeValue || '').toLowerCase();
+
+            liveStatusBadge.className = 'channel-pill';
+            fallbackStatusBadge.className = 'channel-pill';
+
+            if (!requestOk) {
+                liveStatusBadge.classList.add('down');
+                fallbackStatusBadge.classList.add('down');
+                liveStatusBadge.textContent = 'Live: Down';
+                fallbackStatusBadge.textContent = 'Fallback: Down';
+                return;
+            }
+
+            if (mode === 'internal_api') {
+                liveStatusBadge.classList.add('up', 'used');
+                fallbackStatusBadge.classList.add('up');
+                liveStatusBadge.textContent = 'Live: Up • In Use';
+                fallbackStatusBadge.textContent = 'Fallback: Standby';
+                return;
+            }
+
+            if (mode === 'file_fallback') {
+                liveStatusBadge.classList.add('down');
+                fallbackStatusBadge.classList.add('up', 'used');
+                liveStatusBadge.textContent = 'Live: Down';
+                fallbackStatusBadge.textContent = 'Fallback: Up • In Use';
+                return;
+            }
+
+            if (mode === 'internal_unavailable') {
+                liveStatusBadge.classList.add('down');
+                fallbackStatusBadge.classList.add('up');
+                liveStatusBadge.textContent = 'Live: Down';
+                fallbackStatusBadge.textContent = 'Fallback: Standby';
+                return;
+            }
+
+            liveStatusBadge.textContent = 'Live: --';
+            fallbackStatusBadge.textContent = 'Fallback: --';
+        };
+
+        const updatePipelinePanel = (modeValue, generatedAt) => {
+            const mode = String(modeValue || '').toLowerCase();
+            latestSourceMode = mode;
+            latestGeneratedAt = generatedAt || latestGeneratedAt;
+
+            if (mode === 'internal_api') {
+                diagPipelineMode.textContent = 'LIVE';
+                diagPipelineHint.textContent = 'Internal API data is currently being used.';
+            } else if (mode === 'file_fallback') {
+                diagPipelineMode.textContent = 'FALLBACK';
+                diagPipelineHint.textContent = 'Fallback JSON feed is currently being used.';
+            } else if (mode === 'main_app_direct') {
+                diagPipelineMode.textContent = 'DIRECT';
+                diagPipelineHint.textContent = 'Direct upstream CAP parsing is currently in use.';
+            } else {
+                diagPipelineMode.textContent = '--';
+                diagPipelineHint.textContent = 'Pipeline mode unavailable.';
+            }
+            diagGeneratedAt.textContent = `Generated: ${formatDateTime(latestGeneratedAt || 'N/A')}`;
+        };
+
+        const setSyncIndicator = ({
+            state = 'checking',
+            attemptAt = '',
+            successAt = '',
+            detail = '',
+            intervalSeconds = 300
+        }) => {
+            const normalized = String(state || '').toLowerCase();
+            diagSyncState.className = 'diag-sync-state';
+
+            if (normalized === 'success') {
+                diagSyncState.classList.add('success');
+                diagSyncState.textContent = 'SUCCESS (UPDATED)';
+            } else if (normalized === 'nodata') {
+                diagSyncState.classList.add('nodata');
+                diagSyncState.textContent = 'SUCCESS (NO NEW DATA)';
+            } else if (normalized === 'fault') {
+                diagSyncState.classList.add('fault');
+                diagSyncState.textContent = 'FAILURE';
+            } else {
+                diagSyncState.textContent = 'Checking...';
+            }
+
+            const seconds = Math.max(5, Number(intervalSeconds || 300));
+            const cadence = (seconds % 60 === 0)
+                ? `${Math.round(seconds / 60)} min`
+                : `${seconds} sec`;
+            diagSyncTimes.textContent = `Auto sync every ${cadence} • Last try: ${formatDateTime(attemptAt || 'N/A')} • Last success: ${formatDateTime(successAt || 'N/A')}`;
+            diagSyncDetail.textContent = detail || 'No additional sync details available.';
+        };
+
+        const loadDiagnostics = async () => {
+            try {
+                const response = await fetch('/api/mobile/hill90/diagnostics');
+                const data = await response.json();
+                if (!response.ok || data?.success === false) {
+                    throw new Error(data?.message || 'Diagnostics unavailable');
+                }
+
+                diagServerTime.textContent = formatDateTime(data.server_time_utc);
+                if (data.updates?.generated_hint_utc) {
+                    diagGeneratedAt.textContent = `Generated: ${formatDateTime(data.updates.generated_hint_utc)}`;
+                }
+                diagLastSourceSuccess.textContent = formatDateTime(data.updates?.source_last_success_utc || 'N/A');
+                diagLastSourceAttempt.textContent = `Last attempt: ${formatDateTime(data.updates?.source_last_attempt_utc || 'N/A')}`;
+                diagLatestAlertAt.textContent = formatDateTime(data.updates?.latest_alert_updated_utc || 'N/A');
+                diagLatestAlertSource.textContent = `Source: ${data.updates?.latest_alert_source || 'N/A'}`;
+
+                diagMainSqliteSize.textContent = data.storage?.main_sqlite?.size_human || 'N/A';
+                const mainRows = data.storage?.main_sqlite?.rows || {};
+                diagMainSqliteRows.textContent = `Rows: users=${mainRows.users ?? 'N/A'}, disasters=${mainRows.disasters ?? 'N/A'}`;
+
+                diagInternalSqliteSize.textContent = data.storage?.internal_sqlite?.size_human || 'N/A';
+                const internalRows = data.storage?.internal_sqlite?.rows || {};
+                diagInternalSqliteRows.textContent = `Rows: alerts=${internalRows.alerts ?? 'N/A'}, source_runs=${internalRows.source_runs ?? 'N/A'}`;
+
+                diagTotalSqliteSize.textContent = data.storage?.total_sqlite_human || 'N/A';
+                diagStorageHint.textContent = `Main + Internal API SQLite files • last sync success ${formatDateTime(data.pipeline?.last_sync_success_utc || 'N/A')}`;
+
+                const healthyCount = Number(data.sources?.healthy_count || 0);
+                const totalCount = Number(data.sources?.count || 0);
+                diagSourceRunSummary.textContent = `Healthy ${healthyCount}/${totalCount} • Failing ${Math.max(0, totalCount - healthyCount)}`;
+                const runItems = Array.isArray(data.sources?.items) ? data.sources.items : [];
+                if (runItems.length === 0) {
+                    diagSourceRunList.innerHTML = '<div class="diag-item"><span>No source runners reported yet</span></div>';
+                } else {
+                    diagSourceRunList.innerHTML = runItems.map((item) => {
+                        const source = escapeHtml(item.source || '--');
+                        const status = escapeHtml(item.last_status || '--');
+                        const last = escapeHtml(formatDateTime(item.last_success_at || item.last_attempt_at || 'N/A'));
+                        return `<div class="diag-item"><span>${source} (${status})</span><span>${last}</span></div>`;
+                    }).join('');
+                }
+
+                const internalHealthy = Boolean(data.pipeline?.internal_api_healthy);
+                const latestAttemptAt = data.pipeline?.last_sync_attempt_utc || data.updates?.source_last_attempt_utc || '';
+                const latestSuccessAt = data.pipeline?.last_sync_success_utc || data.updates?.source_last_success_utc || '';
+                const syncIntervalSeconds = Number(data.pipeline?.sync_interval_seconds || 300);
+                const latestAlertUpdatedAt = data.updates?.latest_alert_updated_utc || '';
+                const sourceRunnerAttemptAt = data.updates?.source_last_attempt_utc || '';
+                const attemptEpoch = toEpoch(latestAttemptAt);
+                const successEpoch = toEpoch(latestSuccessAt);
+                const alertEpoch = toEpoch(latestAlertUpdatedAt);
+                const updatedWindowMs = 2 * 60 * 1000;
+
+                const hasAttempt = Number.isFinite(attemptEpoch);
+                const hasSuccess = Number.isFinite(successEpoch);
+                const hasAlertTime = Number.isFinite(alertEpoch);
+                const isUpdatedThisCycle = hasAttempt && hasAlertTime
+                    ? alertEpoch >= (attemptEpoch - updatedWindowMs)
+                    : false;
+
+                if (!internalHealthy) {
+                    setSyncIndicator({
+                        state: 'fault',
+                        attemptAt: latestAttemptAt,
+                        successAt: latestSuccessAt,
+                        detail: 'Latest result: failure (internal API is down, sync cannot complete).',
+                        intervalSeconds: syncIntervalSeconds
+                    });
+                } else if (hasSuccess) {
+                    if (isUpdatedThisCycle) {
+                        setSyncIndicator({
+                            state: 'success',
+                            attemptAt: latestAttemptAt,
+                            successAt: latestSuccessAt,
+                            detail: `Latest result: success(updated) • data changed at ${formatDateTime(latestAlertUpdatedAt || latestSuccessAt)} • source runner try ${formatDateTime(sourceRunnerAttemptAt || 'N/A')}.`,
+                            intervalSeconds: syncIntervalSeconds
+                        });
+                    } else {
+                        setSyncIndicator({
+                            state: 'nodata',
+                            attemptAt: latestAttemptAt,
+                            successAt: latestSuccessAt,
+                            detail: `Latest result: success(constant) • no new data from servers • last data update ${formatDateTime(latestAlertUpdatedAt || latestSuccessAt)} • source runner try ${formatDateTime(sourceRunnerAttemptAt || 'N/A')}.`,
+                            intervalSeconds: syncIntervalSeconds
+                        });
+                    }
+                } else if (hasAttempt) {
+                    setSyncIndicator({
+                        state: 'fault',
+                        attemptAt: latestAttemptAt,
+                        successAt: latestSuccessAt,
+                        detail: 'Latest result: failure (attempt made, but no successful sync recorded yet).',
+                        intervalSeconds: syncIntervalSeconds
+                    });
+                } else {
+                    setSyncIndicator({
+                        state: 'checking',
+                        attemptAt: latestAttemptAt,
+                        successAt: latestSuccessAt,
+                        detail: 'Latest result: checking (waiting for the first sync attempt).',
+                        intervalSeconds: syncIntervalSeconds
+                    });
+                }
+
+                if (!latestSourceMode) {
+                    updatePipelinePanel(data.pipeline?.recommended_mode || '', data.updates?.generated_hint_utc || '');
+                }
+            } catch (error) {
+                diagSourceRunSummary.textContent = 'Diagnostics request failed';
+                if (!diagSourceRunList.innerHTML.trim()) {
+                    diagSourceRunList.innerHTML = '<div class="diag-item"><span>Unable to load diagnostics</span></div>';
+                }
+                setSyncIndicator({
+                    state: 'fault',
+                    attemptAt: '',
+                    successAt: '',
+                    detail: 'Latest result: failure (diagnostics request failed). Please retry.',
+                    intervalSeconds: 300
+                });
+            }
+        };
+
+        const forceSyncNow = async () => {
+            if (!forceSyncBtn) return;
+            forceSyncBtn.disabled = true;
+            const previous = forceSyncBtn.textContent;
+            forceSyncBtn.textContent = 'Syncing...';
+
+            try {
+                const response = await fetch('/api/mobile/hill90/force-sync', { method: 'POST' });
+                const data = await response.json();
+                if (data?.success) {
+                    const syncResponse = data?.sync_response || {};
+                    const totalRecords = Object.values(syncResponse).reduce((total, item) => {
+                        const count = Number(item?.records || 0);
+                        return total + (Number.isFinite(count) ? count : 0);
+                    }, 0);
+                    const attemptedAt = formatDateTime(data?.attempted_at_utc || 'N/A');
+                    statusText.textContent = totalRecords > 0
+                        ? `Force sync success at ${attemptedAt} • ${totalRecords} new record(s)`
+                        : `Force sync success at ${attemptedAt} • no new records`;
+                } else {
+                    statusText.textContent = 'Force sync failed';
+                }
+            } catch (error) {
+                statusText.textContent = 'Force sync request failed';
+            } finally {
+                forceSyncBtn.textContent = previous;
+                forceSyncBtn.disabled = false;
+            }
+
+            await loadAlerts(false);
+            await loadDiagnostics();
+        };
+
+        const loadAlerts = async (allowAutoSwitch = true) => {
+            const state = (stateInput.value || 'India').trim();
+            const limit = Math.max(10, Math.min(500, Number(limitInput.value || 80)));
+            const disasterType = (typeInput.value || 'all').trim();
+            const severity = (severityInput.value || 'all').trim();
+            const date = (dateInput.value || '').trim();
+            const sourcePolicy = (policyInput.value || 'live_only').trim();
+            localStorage.setItem('alertify_source_policy', sourcePolicy);
+            statusText.textContent = 'Loading...';
+            list.innerHTML = '';
+
+            try {
+                const query = new URLSearchParams({
+                    state,
+                    limit: String(limit),
+                    disaster_type: disasterType,
+                    severity,
+                    scope: 'expanded',
+                    source_policy: sourcePolicy
+                });
+                if (date) query.set('date', date);
+
+                const response = await fetch(`/api/mobile/live-alerts?${query.toString()}`);
+                const data = await response.json();
+                if (data && data.success === false) {
+                    setSourceMode(data.source_mode || 'internal_unavailable');
+                    setChannelStatus(data.source_mode || 'internal_unavailable', false);
+                    updatePipelinePanel(data.source_mode || 'internal_unavailable', data.generated_at || '');
+                    throw new Error(data.message || 'Live source unavailable');
+                }
+                const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+                render(alerts);
+                setSourceMode(data.source_mode);
+                setChannelStatus(data.source_mode, true);
+                updatePipelinePanel(data.source_mode, data.generated_at || '');
+
+                const mappable = Number.isFinite(Number(data.mappable_count))
+                    ? Number(data.mappable_count)
+                    : alerts.filter((a) => typeof a.lat === 'number' && typeof a.lon === 'number').length;
+                statusText.textContent = `${alerts.length} alerts (${mappable} with location) • generated ${formatDateTime(data.generated_at || 'N/A')}`;
+            } catch (error) {
+                const selectedPolicy = (policyInput.value || 'live_only').trim();
+                if (selectedPolicy === 'live_only' && allowAutoSwitch && !forceLiveMode) {
+                    policyInput.value = 'auto_fallback';
+                    localStorage.setItem('alertify_source_policy', 'auto_fallback');
+                    statusText.textContent = 'Live unavailable • switched to fallback';
+                    return loadAlerts(false);
+                }
+
+                if (selectedPolicy === 'live_only') {
+                    list.innerHTML = '<div class="empty">Live mode failed. Retry or switch source policy.</div>';
+                    setSourceMode('internal_unavailable');
+                    setChannelStatus('internal_unavailable', false);
+                    updatePipelinePanel('internal_unavailable', '');
+                    statusText.textContent = 'Live source unavailable';
+                } else {
+                    list.innerHTML = '<div class="empty">Failed to fetch data from server.</div>';
+                    setSourceMode('');
+                    setChannelStatus('', false);
+                    statusText.textContent = 'Request failed';
+                }
+            }
+        };
+
+        loadBtn.addEventListener('click', async () => {
+            await loadAlerts();
+            await loadDiagnostics();
+        });
+        stateInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') loadBtn.click(); });
+        limitInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') loadBtn.click(); });
+        typeInput.addEventListener('change', () => loadBtn.click());
+        severityInput.addEventListener('change', () => loadBtn.click());
+        dateInput.addEventListener('change', () => loadBtn.click());
+        policyInput.addEventListener('change', () => loadBtn.click());
+
+        clearBtn.addEventListener('click', () => {
+            stateInput.value = 'India';
+            limitInput.value = '80';
+            typeInput.value = 'all';
+            severityInput.value = 'all';
+            dateInput.value = '';
+            policyInput.value = forceLiveMode ? 'auto_fallback' : (localStorage.getItem('alertify_source_policy') || 'live_only');
+            loadBtn.click();
+        });
+
+        if (diagRefreshBtn) {
+            diagRefreshBtn.addEventListener('click', async () => {
+                await loadDiagnostics();
+            });
+        }
+        if (forceSyncBtn) {
+            forceSyncBtn.addEventListener('click', forceSyncNow);
+        }
+
+        policyInput.value = forceLiveMode ? 'auto_fallback' : (localStorage.getItem('alertify_source_policy') || 'live_only');
+        if (forceLiveMode) {
+            localStorage.setItem('alertify_source_policy', 'auto_fallback');
+            policyInput.disabled = true;
+            setInterval(async () => {
+                await loadAlerts(false);
+                await loadDiagnostics();
+            }, HILL90_AUTO_REFRESH_MS);
+        }
+
+        loadAlerts();
+        loadDiagnostics();
+    </script>
+</body>
+</html>

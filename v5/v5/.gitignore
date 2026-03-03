@@ -1,0 +1,9 @@
+# Ignore Python cache and virtual environments
+__pycache__/
+.venv/
+
+# Ignore rollback backup folders and env files
+.rollback_backup_*/
+*.env
+.env
+*/.env

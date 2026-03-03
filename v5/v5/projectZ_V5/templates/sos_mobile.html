@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#39c184" />
+    <title>Disaster Guard • SOS</title>
+    <link rel="manifest" href="{{ url_for('mobile_sos_manifest') }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --phone:#f9f4f5;
+            --text:#1e1f24;
+            --muted:#9a9aa3;
+            --sos:#f05e67;
+            --sos-deep:#e34f5a;
+            --ring1:rgba(240,94,103,.24);
+            --ring2:rgba(240,94,103,.34);
+        }
+
+        * {
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body {
+            font-family:Inter,sans-serif;
+            background:linear-gradient(180deg,#eaf1f8,#f4f7fc);
+            min-height:100vh;
+            display:grid;
+            place-items:center;
+            padding:20px 12px;
+            color:var(--text);
+        }
+
+        .phone {
+            width:min(100%,392px);
+            height:min(840px,95vh);
+            border-radius:34px;
+            border:1px solid #d8e3ef;
+            background:var(--phone);
+            box-shadow:0 22px 50px rgba(96,126,163,.25);
+            overflow:hidden;
+            position:relative;
+        }
+
+        .status-notch {
+            height:28px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .notch {
+            width:120px;
+            height:28px;
+            border-radius:0 0 16px 16px;
+            background:#ebe3e5;
+        }
+
+        .app {
+            height:calc(100% - 84px);
+            overflow:auto;
+            padding:16px 16px 18px;
+            display:grid;
+            grid-template-rows:auto auto 1fr auto;
+            gap:14px;
+        }
+
+        .header {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+        }
+
+        .welcome small {
+            display:block;
+            color:#a7a5ac;
+            font-size:.8rem;
+            font-weight:600;
+            margin-bottom:2px;
+        }
+
+        .welcome strong {
+            display:block;
+            font-size:1.02rem;
+            line-height:1.3;
+        }
+
+        .login-pill {
+            display:inline-block;
+            margin-top:4px;
+            text-decoration:none;
+            border:1px solid #e7d8dd;
+            background:#fff;
+            color:#9f4d58;
+            border-radius:999px;
+            font-size:.75rem;
+            font-weight:700;
+            padding:5px 10px;
+        }
+
+        .title {
+            text-align:center;
+        }
+
+        .title h1 {
+            font-size:2rem;
+            letter-spacing:.2px;
+            margin-bottom:8px;
+        }
+
+        .title p {
+            color:var(--muted);
+            font-size:.95rem;
+            font-weight:500;
+            line-height:1.4;
+        }
+
+        .offline-disaster {
+            margin-top:10px;
+            border:1px solid #d8e6f3;
+            background:#ffffff;
+            border-radius:14px;
+            padding:10px 10px 8px;
+            display:none;
+            gap:8px;
+        }
+
+        .offline-disaster.show {
+            display:grid;
+        }
+
+        .install-card {
+            border:1px solid #d6e3f2;
+            background:#ffffff;
+            border-radius:14px;
+            padding:10px;
+            display:none;
+            gap:8px;
+            box-shadow:0 8px 18px rgba(145,125,132,.08);
+        }
+
+        .install-card.show {
+            display:grid;
+        }
+
+        .install-card strong {
+            font-size:.82rem;
+            color:#37608e;
+            font-weight:800;
+        }
+
+        .install-card p {
+            color:#6f7684;
+            font-size:.74rem;
+            line-height:1.35;
+        }
+
+        .install-actions {
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+
+        .install-actions button {
+            border:1px solid #cddcf0;
+            background:#f1f7ff;
+            color:#2f5d93;
+            border-radius:999px;
+            font-size:.73rem;
+            font-weight:700;
+            padding:6px 10px;
+            cursor:pointer;
+        }
+
+        .install-actions .primary {
+            border-color:#1ea06a;
+            background:#def6ea;
+            color:#1f7b53;
+        }
+
+        .offline-disaster strong {
+            font-size:.82rem;
+            color:#37608e;
+            text-align:left;
+            font-weight:800;
+        }
+
+        .disaster-options {
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+        }
+
+        .disaster-options button {
+            border:1px solid #d3e2f2;
+            background:#f3f8ff;
+            color:#3d628e;
+            border-radius:999px;
+            font-size:.74rem;
+            font-weight:700;
+            padding:6px 10px;
+            cursor:pointer;
+        }
+
+        .disaster-options button.active {
+            border-color:#2fa973;
+            background:#def6ea;
+            color:#1f7b53;
+        }
+
+        .sos-zone {
+            display:grid;
+            place-items:center;
+            align-content:center;
+        }
+
+        .ring-outer,
+        .ring-mid,
+        .ring-inner,
+        .sos-btn {
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+        }
+
+        .ring-outer {
+            width:318px;
+            height:318px;
+            background:var(--ring1);
+            animation:ringPulse 2.1s ease-in-out infinite;
+        }
+
+        .ring-mid {
+            width:266px;
+            height:266px;
+            background:var(--ring2);
+            animation:ringPulse 1.8s ease-in-out infinite;
+        }
+
+        .ring-inner {
+            width:224px;
+            height:224px;
+            background:linear-gradient(180deg,#ef656e,var(--sos));
+            box-shadow:0 14px 28px rgba(208,78,88,.28);
+        }
+
+        .sos-btn {
+            width:200px;
+            height:200px;
+            border:none;
+            background:linear-gradient(180deg,var(--sos),var(--sos-deep));
+            color:#fff;
+            font-size:3rem;
+            font-weight:800;
+            letter-spacing:1px;
+            cursor:pointer;
+            box-shadow:inset 0 -10px 16px rgba(184,49,60,.22),0 10px 20px rgba(170,55,64,.25);
+            transition:transform .16s ease, filter .16s ease, box-shadow .16s ease;
+            touch-action:none;
+            user-select:none;
+            -webkit-user-select:none;
+            -webkit-touch-callout:none;
+            -webkit-tap-highlight-color:transparent;
+        }
+
+        .sos-zone,
+        .ring-outer,
+        .ring-mid,
+        .ring-inner,
+        .sos-status {
+            user-select:none;
+            -webkit-user-select:none;
+        }
+
+        .sos-btn.pressed {
+            transform:scale(.96);
+            filter:brightness(.95);
+            box-shadow:inset 0 -6px 12px rgba(184,49,60,.22),0 6px 14px rgba(170,55,64,.22);
+        }
+
+        .sos-btn.sending {
+            background:linear-gradient(180deg,#f0898f,#de525e);
+            font-size:1.45rem;
+            letter-spacing:.6px;
+        }
+
+        .sos-btn.sent {
+            background:linear-gradient(180deg,#39c184,#1ea06a);
+            font-size:2rem;
+            letter-spacing:.5px;
+        }
+
+        .sos-zone.sent .ring-outer {
+            background:#d8f3e4;
+        }
+
+        .sos-zone.sent .ring-mid {
+            background:#bfead4;
+        }
+
+        .sos-zone.sent .ring-inner {
+            background:linear-gradient(180deg,#66d09b,#2fb176);
+            box-shadow:0 14px 28px rgba(43,155,101,.26);
+        }
+
+        .sos-zone.sent .sos-status {
+            color:#2a8b5f;
+        }
+
+        .sos-status {
+            margin-top:10px;
+            font-size:.78rem;
+            font-weight:700;
+            color:#94535d;
+            text-align:center;
+            min-height:18px;
+        }
+
+        @keyframes ringPulse {
+            0%, 100% { transform:scale(1); opacity:.95; }
+            50% { transform:scale(1.04); opacity:.78; }
+        }
+
+        .address {
+            border-radius:18px;
+            border:1px solid #eadde0;
+            background:#fff;
+            padding:12px 14px;
+            display:grid;
+            gap:4px;
+            box-shadow:0 8px 18px rgba(145,125,132,.14);
+        }
+
+        .address strong {
+            font-size:.95rem;
+        }
+
+        .address p {
+            font-size:.8rem;
+            color:#7f8089;
+            line-height:1.4;
+        }
+
+        .loc-meta {
+            font-size:.72rem;
+            color:#9f8f95;
+            font-weight:600;
+        }
+
+        .footer {
+            display:flex;
+            justify-content:center;
+            padding:0 0 8px;
+        }
+
+        .back {
+            border:none;
+            background:#fff;
+            border:1px solid #e5d9dd;
+            color:#7c4f57;
+            border-radius:10px;
+            font-weight:700;
+            font-size:.8rem;
+            padding:8px 14px;
+            cursor:pointer;
+        }
+
+        @media (max-width: 380px) {
+            .ring-outer { width:286px; height:286px; }
+            .ring-mid { width:244px; height:244px; }
+            .ring-inner { width:210px; height:210px; }
+            .sos-btn { width:186px; height:186px; font-size:2.6rem; }
+            .title h1 { font-size:1.85rem; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                display:block;
+                padding:0;
+            }
+
+            .phone {
+                width:100%;
+                max-width:none;
+                height:100dvh;
+                min-height:100dvh;
+                border:none;
+                border-radius:0;
+                box-shadow:none;
+            }
+
+            .status-notch,
+            .notch {
+                display:none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <div class="status-notch"><div class="notch"></div></div>
+        <main class="app">
+            <header class="header">
+                <div class="welcome">
+                    <small>Welcome back,</small>
+                    {% if username %}
+                    <strong>{{ username }}</strong>
+                    {% else %}
+                    <a class="login-pill" href="{{ url_for('login') }}">Login</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <section class="title">
+                <h1>Are you in emergency?</h1>
+                <p>Long press the button below help will<br />reach you soon</p>
+                <div class="install-card" id="installCard">
+                    <strong>Install SOS for emergency offline access</strong>
+                    <p>Add this page to Home Screen and do not clear site data for this domain to keep offline SOS ready.</p>
+                    <div class="install-actions">
+                        <button type="button" onclick="window.location.href='{{ url_for('mobile_sos_app_download_page') }}'">Download Android App</button>
+                        <button class="primary" id="installPwaBtn" type="button">Install SOS App</button>
+                        <button id="dismissInstallBtn" type="button">Hide</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="sos-zone">
+                <div class="ring-outer">
+                    <div class="ring-mid">
+                        <div class="ring-inner">
+                            <button class="sos-btn" id="sosTrigger" aria-label="Send emergency request">SOS</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="sos-status" id="sosStatus">Press and hold to send emergency request</p>
+            </section>
+
+            <section class="address">
+                <strong>Your current address</strong>
+                <p id="locationText">Locating...</p>
+                <span class="loc-meta" id="locationMeta">Waiting for GPS permission</span>
+            </section>
+        </main>
+        <div class="footer">
+            <button class="back" id="backHome">Back to Home</button>
+        </div>
+    </section>
+
+    <script>
+        const sosTrigger = document.getElementById('sosTrigger');
+        const backHome = document.getElementById('backHome');
+        const sosStatus = document.getElementById('sosStatus');
+        const sosZone = document.querySelector('.sos-zone');
+        const locationText = document.getElementById('locationText');
+        const locationMeta = document.getElementById('locationMeta');
+        const installCard = document.getElementById('installCard');
+        const installPwaBtn = document.getElementById('installPwaBtn');
+        const dismissInstallBtn = document.getElementById('dismissInstallBtn');
+
+        let selectedDisaster = 'Emergency';
+        let currentCoords = null;
+        const OFFLINE_SOS_SMS_NUMBER = '+918700523035';
+        const SOS_CALL_NUMBER = '+918700523035';
+        const LOCATION_CACHE_KEY = 'projectz_last_known_location_v1';
+        const INSTALL_CARD_DISMISSED_KEY = 'projectz_sos_install_card_dismissed_v1';
+
+        let deferredInstallPrompt = null;
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('mobile_sos_service_worker') }}?v=6", { scope: '/mobile/' })
+                    .then((registration) => registration.update())
+                    .catch(() => {
+                    });
+            });
+        }
+
+        const showInstallCard = () => {
+            if (!installCard) return;
+            if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+                return;
+            }
+            if (localStorage.getItem(INSTALL_CARD_DISMISSED_KEY) === '1') {
+                return;
+            }
+            installCard.classList.add('show');
+        };
+
+        const hideInstallCard = (persistDismiss = false) => {
+            if (!installCard) return;
+            installCard.classList.remove('show');
+            if (persistDismiss) {
+                try {
+                    localStorage.setItem(INSTALL_CARD_DISMISSED_KEY, '1');
+                } catch (error) {
+                }
+            }
+        };
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            showInstallCard();
+        });
+
+        installPwaBtn?.addEventListener('click', async () => {
+            if (!deferredInstallPrompt) {
+                showInstallCard();
+                return;
+            }
+
+            deferredInstallPrompt.prompt();
+            try {
+                await deferredInstallPrompt.userChoice;
+            } catch (error) {
+            }
+            deferredInstallPrompt = null;
+            hideInstallCard();
+        });
+
+        dismissInstallBtn?.addEventListener('click', () => {
+            hideInstallCard(true);
+        });
+
+        window.addEventListener('appinstalled', () => {
+            hideInstallCard(true);
+        });
+
+        showInstallCard();
+
+        const HOLD_MS = 3000;
+        const DISPLAY_COUNTDOWN_START = 3;
+        let holdTimer = null;
+        let holdTick = null;
+        let isSending = false;
+
+        const isOfflineMode = () => !navigator.onLine;
+
+        const updateOfflineDisasterUI = () => {
+            if (!isSending) {
+                sosStatus.textContent = 'Press and hold to send emergency request';
+            }
+        };
+
+        const buildSosMessage = () => {
+            const problem = selectedDisaster || 'Emergency';
+            const locationLabel = (locationText?.textContent || '').trim() || 'Location unavailable';
+            const coordsText = currentCoords
+                ? `${currentCoords.lat.toFixed(5)}, ${currentCoords.lon.toFixed(5)}`
+                : 'Coordinates unavailable';
+            const mapLink = currentCoords
+                ? `https://maps.google.com/?q=${currentCoords.lat},${currentCoords.lon}`
+                : 'Map unavailable';
+            const modeLabel = isOfflineMode() ? 'Offline' : 'Online';
+
+            return [
+                `HELP! I am in disaster (${modeLabel})`,
+                `Disaster type: ${problem}`,
+                `Live location: ${locationLabel}`,
+                `Coordinates: ${coordsText}`,
+                `Map: ${mapLink}`
+            ].join('\n');
+        };
+
+        const triggerSosSms = () => {
+            const phoneNumber = String(OFFLINE_SOS_SMS_NUMBER || '').replace(/[^+\d]/g, '');
+            if (!phoneNumber) {
+                return;
+            }
+
+            const smsBody = encodeURIComponent(buildSosMessage());
+            const ua = navigator.userAgent || '';
+            const isAndroid = /android/i.test(ua);
+            const isIOS = /iphone|ipad|ipod/i.test(ua);
+
+            if (isAndroid) {
+                window.location.href = `smsto:${phoneNumber}?body=${smsBody}`;
+                return;
+            }
+
+            if (isIOS) {
+                window.location.href = `sms:${phoneNumber}&body=${smsBody}`;
+                return;
+            }
+
+            window.location.href = `smsto:${phoneNumber}?body=${smsBody}`;
+        };
+
+        const triggerSosCall = () => {
+            const phoneNumber = String(SOS_CALL_NUMBER || '').replace(/[^+\d]/g, '');
+            if (!phoneNumber) {
+                return;
+            }
+
+            const telUri = `tel:${phoneNumber}`;
+            const dialLink = document.createElement('a');
+            dialLink.href = telUri;
+            dialLink.style.display = 'none';
+            document.body.appendChild(dialLink);
+            dialLink.click();
+            document.body.removeChild(dialLink);
+
+            setTimeout(() => {
+                if (document.visibilityState !== 'hidden') {
+                    window.location.href = telUri;
+                }
+            }, 220);
+        };
+
+        window.addEventListener('online', updateOfflineDisasterUI);
+        window.addEventListener('offline', updateOfflineDisasterUI);
+        updateOfflineDisasterUI();
+
+        const resetSosButton = () => {
+            clearTimeout(holdTimer);
+            clearInterval(holdTick);
+            holdTimer = null;
+            holdTick = null;
+            if (!isSending) {
+                sosTrigger.classList.remove('pressed');
+                sosZone?.classList.remove('sent');
+                sosTrigger.textContent = 'SOS';
+                updateOfflineDisasterUI();
+            }
+        };
+
+        const sendSos = () => {
+            isSending = true;
+            sosTrigger.classList.remove('pressed');
+            sosTrigger.classList.add('sending');
+            sosTrigger.textContent = 'SENDING...';
+            sosStatus.textContent = 'Emergency request is being dispatched';
+
+            setTimeout(() => {
+                sosTrigger.classList.remove('sending');
+                sosTrigger.classList.add('sent');
+                sosZone?.classList.add('sent');
+                sosTrigger.textContent = 'SENT';
+                if (isOfflineMode()) {
+                    sosStatus.textContent = 'No internet: opening SMS';
+                    triggerSosSms();
+                } else {
+                    sosStatus.textContent = 'Internet available: placing call';
+                    triggerSosCall();
+                }
+
+                setTimeout(() => {
+                    sosTrigger.classList.remove('sent');
+                    sosZone?.classList.remove('sent');
+                    isSending = false;
+                    resetSosButton();
+                }, 2200);
+            }, 1300);
+        };
+
+        const startHold = (event) => {
+            event.preventDefault();
+            if (isSending) return;
+            const startedAt = Date.now();
+            sosTrigger.classList.add('pressed');
+
+            if (typeof sosTrigger.setPointerCapture === 'function' && event.pointerId !== undefined) {
+                try {
+                    sosTrigger.setPointerCapture(event.pointerId);
+                } catch (error) {
+                }
+            }
+
+            holdTick = setInterval(() => {
+                const remaining = Math.max(0, HOLD_MS - (Date.now() - startedAt));
+                const visibleCountdown = (DISPLAY_COUNTDOWN_START * (remaining / HOLD_MS)).toFixed(1);
+                sosTrigger.textContent = visibleCountdown;
+                sosStatus.textContent = 'Keep holding to trigger SOS';
+            }, 50);
+
+            holdTimer = setTimeout(() => {
+                clearInterval(holdTick);
+                holdTick = null;
+                sendSos();
+            }, HOLD_MS);
+        };
+
+        const endHold = (event) => {
+            if (event) {
+                event.preventDefault();
+            }
+            if (isSending) return;
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+                clearInterval(holdTick);
+                holdTick = null;
+                sosTrigger.classList.remove('pressed');
+                sosTrigger.textContent = 'SOS';
+                sosStatus.textContent = 'Press and hold to send emergency request';
+            }
+        };
+
+        sosTrigger.addEventListener('selectstart', (event) => event.preventDefault());
+        sosTrigger.addEventListener('dragstart', (event) => event.preventDefault());
+        sosTrigger.addEventListener('pointerdown', startHold);
+        sosTrigger.addEventListener('pointerup', endHold);
+        sosTrigger.addEventListener('pointerleave', endHold);
+        sosTrigger.addEventListener('pointercancel', endHold);
+
+        const setCoordText = (lat, lon) => {
+            currentCoords = { lat, lon };
+            locationText.textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+            locationMeta.textContent = 'Coordinates captured';
+            try {
+                localStorage.setItem(LOCATION_CACHE_KEY, JSON.stringify({
+                    lat,
+                    lon,
+                    label: locationText.textContent,
+                    savedAt: new Date().toISOString()
+                }));
+            } catch (error) {
+            }
+        };
+
+        const applyCachedLocation = () => {
+            try {
+                const raw = localStorage.getItem(LOCATION_CACHE_KEY);
+                if (!raw) {
+                    return false;
+                }
+                const cached = JSON.parse(raw);
+                if (typeof cached?.lat !== 'number' || typeof cached?.lon !== 'number') {
+                    return false;
+                }
+                currentCoords = { lat: cached.lat, lon: cached.lon };
+                if (cached.label && String(cached.label).trim()) {
+                    locationText.textContent = String(cached.label).trim();
+                } else {
+                    locationText.textContent = `${cached.lat.toFixed(5)}, ${cached.lon.toFixed(5)}`;
+                }
+                locationMeta.textContent = 'Using last known saved location';
+                return true;
+            } catch (error) {
+                return false;
+            }
+        };
+
+        const reverseGeocode = async (lat, lon) => {
+            if (!navigator.onLine) {
+                return;
+            }
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`,
+                    { signal: controller.signal }
+                );
+                const data = await response.json();
+                if (data && data.display_name) {
+                    locationText.textContent = data.display_name;
+                    locationMeta.textContent = 'Precise GPS location';
+                }
+            } catch (error) {
+                locationMeta.textContent = 'Using coordinate-only fallback';
+            } finally {
+                clearTimeout(timeout);
+            }
+        };
+
+        const applyPosition = (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            setCoordText(lat, lon);
+            const accuracy = Number(position?.coords?.accuracy || 0);
+            if (accuracy > 0) {
+                locationMeta.textContent = `GPS accuracy ~${Math.round(accuracy)}m`;
+            }
+            reverseGeocode(lat, lon);
+        };
+
+        const fallbackLocation = async () => {
+            if (applyCachedLocation()) {
+                return;
+            }
+            if (!navigator.onLine) {
+                locationText.textContent = 'GPS location unavailable right now';
+                locationMeta.textContent = 'Keep location permission on and try again';
+                return;
+            }
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                if (data && data.latitude && data.longitude) {
+                    setCoordText(Number(data.latitude), Number(data.longitude));
+                    locationText.textContent = `${data.city || 'Unknown city'}, ${data.region || ''} ${data.country_name || ''}`.trim();
+                    locationMeta.textContent = 'Approximate IP location';
+                    return;
+                }
+            } catch (error) {
+            }
+            locationText.textContent = 'Unable to determine location quickly';
+            locationMeta.textContent = 'Please enable location and retry';
+        };
+
+        const fetchFastLocation = () => {
+            applyCachedLocation();
+            if (!navigator.geolocation) {
+                fallbackLocation();
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                applyPosition,
+                () => {
+                    navigator.geolocation.getCurrentPosition(
+                        applyPosition,
+                        () => {
+                            navigator.geolocation.getCurrentPosition(
+                                applyPosition,
+                                fallbackLocation,
+                                { enableHighAccuracy: false, timeout: 8000, maximumAge: 86400000 }
+                            );
+                        },
+                        { enableHighAccuracy: false, timeout: 3500, maximumAge: 86400000 }
+                    );
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        };
+
+        fetchFastLocation();
+
+        backHome.addEventListener('click', () => {
+            window.location.href = "{{ url_for('mobile_home') }}";
+        });
+    </script>
+</body>
+</html>

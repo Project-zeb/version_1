@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Disaster Guard • Alerts Mobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --phone:#f9fbfe; --text:#16253b; --muted:#7c8ea9; --line:#dce6f2; --blue:#2f86ff; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:Inter,sans-serif; background:linear-gradient(180deg,#eaf1f8,#f4f7fc); min-height:100vh; display:grid; place-items:center; padding:20px 12px; color:var(--text); }
+        .phone { width:min(100%,392px); height:min(840px,95vh); border-radius:34px; border:1px solid #d8e3ef; background:var(--phone); box-shadow:0 22px 50px rgba(96,126,163,.25); overflow:hidden; position:relative; }
+        .status-notch { height:28px; display:flex; justify-content:center; align-items:center; }
+        .notch { width:120px; height:28px; border-radius:0 0 16px 16px; background:#e4edf7; }
+        .app { height:calc(100% - 100px); overflow:auto; padding:14px 14px 90px; display:grid; gap:12px; }
+        .topbar { display:flex; justify-content:space-between; align-items:start; gap:8px; }
+        .location small { display:block; color:var(--muted); font-size:.72rem; font-weight:600; }
+        .location strong { font-size:.95rem; }
+        .circle { width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:#fff; display:grid; place-items:center; color:#5b6f8e; font-size:.88rem; }
+        .chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; }
+        .chips button { border:1px solid #d8e7fa; background:#f5f9ff; color:#55769f; border-radius:999px; padding:6px 10px; font-size:.72rem; font-weight:700; white-space:nowrap; }
+        .chips button.active { background:#e8f1ff; color:#2160b7; border-color:#c6ddff; }
+        .list { display:grid; gap:9px; }
+        .item { border-radius:12px; border:1px solid #d7e7f9; background:#fff; padding:10px; display:grid; gap:6px; }
+        .head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .head h4 { font-size:.84rem; color:#274f7d; }
+        .meta { display:flex; justify-content:space-between; color:#6583a9; font-size:.72rem; font-weight:600; }
+        .tag { border-radius:999px; font-size:.66rem; font-weight:700; padding:3px 8px; }
+        .tag.low { background:#deebff; color:#1e5fb3; }
+        .tag.medium { background:#ffe8c2; color:#915b0f; }
+        .tag.high { background:#ffd6d4; color:#a5352d; }
+        .accordion { border-radius:16px; border:1px solid var(--line); background:#fff; overflow:hidden; }
+        .acc-item + .acc-item { border-top:1px solid #e5eef9; }
+        .acc-btn { width:100%; border:none; background:#fff; text-align:left; padding:11px 12px; display:flex; justify-content:space-between; gap:10px; color:#2c4f7d; font-size:.8rem; font-weight:700; cursor:pointer; }
+        .acc-content { max-height:0; overflow:hidden; font-size:.75rem; color:#5c789f; line-height:1.55; padding:0 12px; transition:max-height .3s ease; }
+        .nav { position:absolute; left:0; right:0; bottom:0; height:72px; background:rgba(255,255,255,.92); border-top:1px solid #dbe7f5; display:grid; grid-template-columns:repeat(3,1fr); padding:8px 10px 12px; }
+        .nav a, .nav button { text-decoration:none; color:#6986ac; display:grid; place-items:center; gap:4px; font-size:.66rem; font-weight:700; border:none; background:transparent; }
+        .nav a span:first-child { font-size:1rem; }
+        .nav a.active { color:var(--blue); }
+        .sos-nav { color:#c23d46 !important; font-weight:800 !important; }
+        .sos-core {
+            width:44px;
+            height:44px;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:linear-gradient(135deg,#ff6f66,#ff4f58);
+            color:#fff;
+            box-shadow:0 8px 14px rgba(255,91,97,.28);
+            font-size:.78rem;
+            letter-spacing:.3px;
+            position:relative;
+            animation:sosBeat 1.5s ease-in-out infinite;
+        }
+        .sos-core::after {
+            content:"";
+            position:absolute;
+            inset:-6px;
+            border-radius:50%;
+            border:2px solid rgba(255,95,102,.32);
+            animation:sosRing 1.5s ease-out infinite;
+        }
+        @keyframes sosBeat {
+            0%, 100% { transform:scale(1); }
+            45% { transform:scale(1.09); }
+        }
+        @keyframes sosRing {
+            0% { transform:scale(.92); opacity:.7; }
+            100% { transform:scale(1.22); opacity:0; }
+        }
+        .sos-popup {
+            position:absolute;
+            left:50%;
+            transform:translateX(-50%);
+            bottom:84px;
+            border:1px solid #ffc6c2;
+            background:#fff3f2;
+            color:#a53f45;
+            border-radius:11px;
+            font-size:.74rem;
+            font-weight:700;
+            padding:8px 11px;
+            display:none;
+            z-index:7;
+            white-space:nowrap;
+            box-shadow:0 10px 20px rgba(196,95,101,.2);
+        }
+        .sos-popup.show { display:block; }
+    </style>
+</head>
+<body>
+    <section class="phone">
+        <div class="status-notch"><div class="notch"></div></div>
+        <main class="app">
+            <header class="topbar">
+                <div class="location"><small>Alert Feed</small><strong>All Disaster Alerts</strong></div>
+                <button class="circle">⚙</button>
+            </header>
+
+            <div class="chips">
+                <button class="active">All</button>
+                <button>Earthquake</button>
+                <button>Flood</button>
+                <button>Cyclone</button>
+                <button>Fire</button>
+            </div>
+
+            <div class="list" id="alertList">
+                <article class="item"><div class="head"><h4>Earthquake Alert • South Sector Line-3</h4><span class="tag high">High</span></div><div class="meta"><span>11:47 IST</span><span>2.8 km</span></div></article>
+                <article class="item"><div class="head"><h4>Flood Alert • Koramangala Drain Belt</h4><span class="tag medium">Severe</span></div><div class="meta"><span>10:28 IST</span><span>4.4 km</span></div></article>
+                <article class="item"><div class="head"><h4>Hurricane Alert • MV Extension, Hoskote</h4><span class="tag low">Low</span></div><div class="meta"><span>09:12 IST</span><span>7.2 km</span></div></article>
+            </div>
+
+            <section class="accordion" id="accordion">
+                <article class="acc-item open">
+                    <button class="acc-btn" type="button"><span>What to carry during evacuation?</span><span>−</span></button>
+                    <div class="acc-content">Carry identification, medicines, power bank, water, and emergency contacts. Keep essentials in one go-bag for quick movement.</div>
+                </article>
+                <article class="acc-item">
+                    <button class="acc-btn" type="button"><span>How often do alerts refresh?</span><span>+</span></button>
+                    <div class="acc-content">Critical alerts refresh every 30 seconds. Verified command updates override older messages automatically.</div>
+                </article>
+            </section>
+        </main>
+        <nav class="nav">
+            <a href="home-mobile.html"><span>🏠</span><span>Home</span></a>
+            <button id="sosNavBtn" class="sos-nav" aria-label="SOS"><span class="sos-core">SOS</span></button>
+            <a href="alerts-mobile.html" class="active"><span>🚨</span><span>Alerts</span></a>
+        </nav>
+        <div class="sos-popup" id="sosPopup">Emergency details sending...</div>
+    </section>
+    <script>
+        const accordion = document.getElementById('accordion');
+        const items = [...accordion.querySelectorAll('.acc-item')];
+        items.forEach((item) => {
+            if (item.classList.contains('open')) {
+                item.querySelector('.acc-content').style.maxHeight = item.querySelector('.acc-content').scrollHeight + 'px';
+            }
+        });
+        accordion.addEventListener('click', (event) => {
+            const btn = event.target.closest('.acc-btn');
+            if (!btn) return;
+            const item = btn.closest('.acc-item');
+            const content = item.querySelector('.acc-content');
+            const icon = btn.querySelector('span:last-child');
+            const isOpen = item.classList.contains('open');
+            items.forEach((entry) => {
+                if (entry !== item) {
+                    entry.classList.remove('open');
+                    entry.querySelector('.acc-content').style.maxHeight = '0px';
+                    entry.querySelector('.acc-btn span:last-child').textContent = '+';
+                }
+            });
+            if (isOpen) {
+                item.classList.remove('open');
+                content.style.maxHeight = '0px';
+                icon.textContent = '+';
+            } else {
+                item.classList.add('open');
+                content.style.maxHeight = content.scrollHeight + 'px';
+                icon.textContent = '−';
+            }
+        });
+
+        const sosBtn = document.getElementById('sosNavBtn');
+        const sosPopup = document.getElementById('sosPopup');
+        let pressTimer;
+        let longPressTriggered = false;
+
+        const startPress = () => {
+            longPressTriggered = false;
+            pressTimer = setTimeout(() => {
+                longPressTriggered = true;
+                sosPopup.classList.add('show');
+                setTimeout(() => {
+                    sosPopup.classList.remove('show');
+                    window.location.href = 'details-mobile.html?sos=active';
+                }, 900);
+            }, 700);
+        };
+
+        const cancelPress = () => {
+            clearTimeout(pressTimer);
+        };
+
+        sosBtn.addEventListener('pointerdown', startPress);
+        sosBtn.addEventListener('pointerup', () => {
+            cancelPress();
+            if (!longPressTriggered) {
+                window.location.href = 'details-mobile.html';
+            }
+        });
+        sosBtn.addEventListener('pointerleave', cancelPress);
+        sosBtn.addEventListener('pointercancel', cancelPress);
+    </script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Login | Save India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --phone:#f9f4f5;
+      --text:#1e1f24;
+      --muted:#9a9aa3;
+      --line:#e8dcdf;
+      --accent:#f05e67;
+      --accent-deep:#e34f5a;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family:Inter,sans-serif;
+      background:linear-gradient(180deg,#eaf1f8,#f4f7fc);
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:20px 12px;
+      color:var(--text);
+    }
+
+    .phone {
+      width:min(100%,392px);
+      height:min(840px,95vh);
+      border-radius:34px;
+      border:1px solid #d8e3ef;
+      background:var(--phone);
+      box-shadow:0 22px 50px rgba(96,126,163,.25);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .status-notch {
+      height:28px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .notch {
+      width:120px;
+      height:28px;
+      border-radius:0 0 16px 16px;
+      background:#ebe3e5;
+    }
+
+    .app {
+      height:calc(100% - 28px);
+      padding:18px 16px 20px;
+      display:grid;
+      align-content:center;
+      gap:16px;
+    }
+
+    .heading {
+      text-align:center;
+    }
+
+    .brand {
+      text-align:center;
+      font-family:"Great Vibes",cursive;
+      font-size:2.2rem;
+      color:#c15361;
+      letter-spacing:.3px;
+      margin-bottom:4px;
+    }
+
+    .heading h1 {
+      font-size:1.9rem;
+      margin-bottom:6px;
+      letter-spacing:.2px;
+    }
+
+    .heading p {
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.5;
+    }
+
+    .panel {
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      padding:14px;
+      display:grid;
+      gap:12px;
+      box-shadow:0 10px 20px rgba(145,125,132,.14);
+    }
+
+    .input-group { display:grid; gap:6px; }
+
+    .input-group label {
+      font-size:.78rem;
+      color:#7c6f75;
+      font-weight:700;
+    }
+
+    .input {
+      width:100%;
+      border:1px solid #eadde0;
+      border-radius:12px;
+      padding:11px 12px;
+      outline:none;
+      font-size:.88rem;
+      color:#3a3840;
+      background:#fff;
+    }
+
+    .input:focus {
+      border-color:#ef9ea5;
+      box-shadow:0 0 0 3px rgba(240,94,103,.12);
+    }
+
+    .primary-btn {
+      width:100%;
+      border:none;
+      border-radius:12px;
+      padding:11px 14px;
+      color:#fff;
+      background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+      font-size:.9rem;
+      font-weight:800;
+      letter-spacing:.2px;
+      cursor:pointer;
+    }
+
+    .divider {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#a9a0a5;
+      font-size:.72rem;
+      font-weight:700;
+      text-transform:uppercase;
+    }
+
+    .divider::before,
+    .divider::after {
+      content:"";
+      flex:1;
+      height:1px;
+      background:#efe2e5;
+    }
+
+    .google-btn {
+      width:100%;
+      border:1px solid #eadde0;
+      border-radius:12px;
+      background:#fff;
+      color:#4a4449;
+      font-size:.86rem;
+      font-weight:700;
+      padding:10px 12px;
+      text-decoration:none;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+    }
+
+    .google-icon {
+      width:18px;
+      height:18px;
+      display:inline-block;
+    }
+
+    .bottom {
+      text-align:center;
+      font-size:.8rem;
+      color:#7a7277;
+      line-height:1.5;
+    }
+
+    .bottom .home-link {
+      margin-top:6px;
+      display:inline-block;
+      color:#7f5b63;
+      font-weight:700;
+    }
+
+    .bottom a {
+      color:#b24c58;
+      text-decoration:none;
+      font-weight:700;
+    }
+
+    .msg {
+      text-align:center;
+      border:1px solid #f1cbcf;
+      background:#fff2f3;
+      color:#b14855;
+      border-radius:10px;
+      font-size:.77rem;
+      font-weight:700;
+      padding:8px 10px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        display:block;
+        padding:0;
+      }
+
+      .phone {
+        width:100%;
+        max-width:none;
+        height:100dvh;
+        min-height:100dvh;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+      }
+
+      .status-notch,
+      .notch {
+        display:none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <section class="phone">
+    <div class="status-notch"><div class="notch"></div></div>
+
+    <main class="app">
+      <div class="brand">Alertify</div>
+
+      <section class="heading">
+        <h1>Welcome Back</h1>
+        <p>Log in for advance features</p>
+      </section>
+
+      <form class="panel" action="{{ url_for('login') }}" method="post">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            class="input"
+            name="username"
+            id="username"
+            required
+            placeholder="matrika_regmi"
+          />
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            class="input"
+            name="password"
+            id="password"
+            required
+            placeholder="Alertify@1234"
+          />
+        </div>
+
+        <button type="submit" class="primary-btn">Log In</button>
+
+        <div class="divider">or</div>
+
+        <a class="google-btn" href="{{ url_for('login_google') }}">
+          <svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3.1l5.7-5.7C34.6 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3.1l5.7-5.7C34.6 6.5 29.5 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z"/>
+            <path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.6l-6.5-5.5C29.5 34.8 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.6 5.1C9.5 39.6 16.1 44 24 44z"/>
+            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.1-3.3 5.6-6.3 6.9l6.5 5.5C38.8 37.1 44 31.2 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+          </svg>
+          Continue with Google
+        </a>
+      </form>
+
+      {% if msg %}
+      <p class="msg">{{ msg }}</p>
+      {% endif %}
+
+      <div class="bottom">
+        Don’t have an account?
+        <a href="{{ url_for('signup') }}">Sign Up</a>
+        <br>
+        <a class="home-link" href="{{ url_for('mobile_home') }}">Back to Home</a>
+      </div>
+    </main>
+  </section>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<div class="nav-menu" id="navMenu">
+    <a href="{{ url_for('mobile_alerts') }}"{% if mobile_menu_active == 'alerts' %} class="active"{% endif %}>Alerts</a>
+    <a href="{{ url_for('mobile_analysis') }}"{% if mobile_menu_active == 'analysis' %} class="active"{% endif %}>Analysis</a>
+    <a href="{{ url_for('mobile_organization') }}"{% if mobile_menu_active == 'organizations' %} class="active"{% endif %}>Organizations</a>
+    <a href="{{ url_for('mobile_satellite') }}"{% if mobile_menu_active == 'satellite' %} class="active"{% endif %}>Satellite View</a>
+    <a href="{{ url_for('mobile_sos_app_download_page') }}"{% if mobile_menu_active == 'offline' %} class="active"{% endif %}>Offline App</a>
+    <a href="{{ url_for('report_disaster') }}"{% if mobile_menu_active == 'report' %} class="active"{% endif %}>Report</a>
+    {% if session.get('role') == 'ADMIN' %}
+    <a href="{{ url_for('admin_panel') }}"{% if mobile_menu_active == 'admin' %} class="active"{% endif %}>Admin Panel</a>
+    {% endif %}
+</div>

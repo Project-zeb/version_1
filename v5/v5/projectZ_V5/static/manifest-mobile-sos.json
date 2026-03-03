@@ -1,0 +1,9 @@
+{
+  "name": "Disaster Guard SOS Offline",
+  "short_name": "DG SOS",
+  "start_url": "/mobile/sos",
+  "scope": "/mobile/",
+  "display": "standalone",
+  "background_color": "#f9f4f5",
+  "theme_color": "#39c184"
+}
