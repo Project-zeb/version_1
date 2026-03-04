@@ -1,6 +1,8 @@
-# Internal Disaster API (Flask) - Free Student Stack
+# Internal Disaster API (Flask) - Version 5.0
 
-Safe + official-source internal API with auto-sync every 5 minutes, JWT support, and admin key rotation.
+This service forms the backend alert collector for the **5.0 release** of the Save India project. It is described in more detail by the top‑level `README.md` in the parent directory; the contents of this file focus on operating the API itself.
+
+The server is lightweight, free‑first and includes automatic synchronization of external feeds, JWT support, and admin key rotation.
 
 ## 1) Free-first architecture
 
@@ -171,3 +173,7 @@ Notes:
 
 - Service is configured with one gunicorn worker to avoid duplicate scheduler threads.
 - This runs on the VM, so syncing continues even when your personal device is powered off.
+
+---
+
+**Archival note:** This README corresponds to the 5.0 release.  Earlier versions of the internal API are retained in sibling directories under `../..` and contain their own documentation for historical comparison.

@@ -1,223 +1,117 @@
-# version_1
+# ProjectZ Version 5.0
 
-## One-Command Local Start (SQLite, beginner friendly)
+This subdirectory contains the **front‑end component** of the Save India application.  It provides the web interface used by administrators and the public mobile traffic, and it relies on the companion `internal api` service for live alert data.
 
-From a fresh clone, run:
+The top‑level `README.md` in the `v5.0` folder contains an overview of the entire release, a comparison with earlier versions, deployment notes and a general checklist.  Refer to it first; this document focuses on details specific to the front‑end service.
 
-```bash
-cd projectz_v.2
-./start_local.sh
-```
+---
 
-What this does automatically:
+## Features (front end)
 
-- creates virtualenvs for main app and internal API (if missing)
-- installs dependencies
-- enforces SQLite-first mode (no MySQL requirement)
-- aligns internal API key between both apps
-- starts Flask on `http://127.0.0.1:2000`
-- auto-starts internal API on `:5100` and syncs latest alerts
+* Responsive Flask application with templates for desktop and mobile devices.
+* Configurable database backend:
+  * SQLite by default, no external dependencies.
+  * Optional MySQL or PostgreSQL with bidirectional syncing to support larger deployments.
+* Authentication:
+  * Google OAuth login (optional) and local user accounts.
+  * Session management and role‑based protection for admin pages.
+* Mobile alert integration:
+  * Fetches alerts from the internal API over HTTP.
+  * Supports `live_only`, `cache_only` and `auto_fallback` modes controlled via environment variables.
+* Offline support and simple service worker for mobile SOS page.
+* One‑command startup helper (`start_local.sh`) for Linux/WSL.
+* Windows batch scripts for environment setup and running (see `scripts` folder).
 
-step 1-> make an .env file for environment variables
+---
 
-db_host = localhost
-db_user = root
-db_password = ayaan
-db_name=Save_India
-secret_key=secret
+## Local development
 
-copy paste for user ayaan local machine change for yourself accordingly
+### 1. Prerequisites
 
-## Live Disaster Alert Integration
+* Python 3.9+ installed and on `PATH`.
+* (Optional) MySQL or PostgreSQL if you intend to use anything other than SQLite.
 
-This project now supports backend ingestion of external alert feeds and serves them as JSON for mobile UI.
+### 2. One‑step startup (recommended)
 
-### Environment variables
-
-Add these optional variables in `.env`:
-
-- `ALERT_SYNC_INTERVAL_SECONDS=120` (poll window; default is 120 seconds)
-- `NDMA_CAP_FEED_URL=https://sachet.ndma.gov.in/cap_public_website.xml`
-- `IMD_RSS_FEED_URL=https://mausam.imd.gov.in/`
-- `CWC_FEED_URL=https://ffs.india-water.gov.in/`
-
-### Backend endpoints
-
-- `GET /api/mobile-alerts` → returns stored alerts and performs sync if cache is stale.
-- `POST /api/mobile-alerts/sync` → manual sync trigger.
-- `POST /api/mobile-alerts/sync?force=true` → force sync immediately.
-
-### Notes
-
-- NDMA SACHET can return `403` for some environments unless access is whitelisted or routed through an approved channel.
-- IMD/CWC endpoints can also change structure or availability; keep feed URLs configurable in `.env`.
-
-## Google Cloud Always Free - Main App Auto Start
-
-You can run this as a single app. The internal API service is optional.
-
-1) Prepare environment and dependencies:
+From a shell (bash, PowerShell, WSL):
 
 ```bash
-cd projectz_v.2
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+cd projectZ_V5
+./start_local.sh       # or use the Windows helpers described below
 ```
 
-2) Create `.env` (or update it) with at least:
+The script will:
+
+1. Create a virtual environment (`.venv`, `.venv39` or `.venv_runtime` depending on what is already present).
+2. Install Python dependencies from `requirements.txt` if needed.
+3. Generate initial `.env` configuration with default values and random secrets.
+4. Ensure the internal API has matching API keys and is configured to run.
+5. Launch both the internal API (`http://127.0.0.1:5100`) and the main web app (`http://127.0.0.1:2000`).
+
+Edit either `.env` file if you wish to override the generated values before rerunning.
+
+### 3. Windows helpers
+
+A set of batch files is provided under `scripts`:
+
+* `setup_windows.bat` – creates virtual environments for both services and copies `.env.example` into place.
+* `run_api.bat` – activates the internal API venv and starts the service.
+* `run_web.bat` – activates the front‑end venv and runs `app.py`.
+
+Run them from PowerShell with the current directory set to the repository root, for example:
+
+```powershell
+cd C:\path\to\v5.0
+.\projectZ_V5\scripts\setup_windows.bat
+```
+
+### 4. Configuration
+
+Copy the example file if it does not already exist:
+
+```bash
+cp .env.example .env
+```
+
+The following environment variables are most commonly adjusted:
 
 ```env
-PORT=8001
-APP_URL_SCHEME=https
-MOBILE_ALERTS_SOURCE_POLICY=live_only
-PRIMARY_DB=sqlite
+PRIMARY_DB=sqlite              # or "mysql" / "postgresql"
 SQLITE_DB_PATH=app.db
-secret_key=<your-random-secret>
-```
-
-Optional (only if you still use the separate internal API):
-
-```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=secret
+DB_NAME=save_india
+SECRET_KEY=...
+PORT=2000
 INTERNAL_ALERTS_API_URL=http://127.0.0.1:5100/api/alerts
-INTERNAL_ALERTS_API_KEY=<same key used by internal API>
-INTERNAL_ALERTS_API_KEY_HEADER=X-Internal-API-Key
+INTERNAL_ALERTS_API_KEY=<generated key>
+MOBILE_ALERTS_SOURCE_POLICY=auto_fallback
 ```
 
-3) Install and start `systemd` service:
+Consult the top‑level README for additional deployment‑specific variables.
 
-```bash
-./scripts/setup_main_gcp_service.sh
-```
+---
 
-4) Verify:
+## Database migrations
 
-```bash
-sudo systemctl status projectz-main-web
-sudo journalctl -u projectz-main-web -f
-curl -sS http://127.0.0.1:8001/
-```
+The front end creates its own tables automatically on first launch; no external migration tool is required.  If you switch database backends you may need to export and import the SQLite file or run custom SQL – this release does not include a generic migration script.
 
-5) Restart after code changes:
+---
 
-```bash
-sudo systemctl restart projectz-main-web
-```
+## Windows compatibility
 
-Tip:
+Batch files in `scripts` are intentionally minimal; they activate the appropriate virtual environment and run the services using the `python` command.  They should work on any machine where Python is installed and available on `PATH`.
 
-- Open GCP firewall for your app port (`8001`) if you access it directly from browser.
+---
 
-## Cloudflare Tunnel with Fixed Domain (matrikaregmi.com.np)
+## Additional resources
 
-Use this if you want a stable URL instead of temporary quick tunnel links.
+* See `projectZ_V5/start_local.sh` for the full one‑command logic; it can be used as a reference when scripting further automation.
+* Deployment helpers (`setup_*`) are documented in the top‑level README and in comments at the top of each script file.
+* Any questions about the general architecture are addressed in the root `README.md`.
 
-1) Install `cloudflared` (macOS):
 
-```bash
-brew install cloudflared
-```
+---
 
-2) Ensure your app runs locally on port `8002`:
-
-```bash
-cd projectz_v.2
-PORT=8002 ./.venv39/bin/python app.py
-```
-
-3) In another terminal, configure named tunnel + fixed DNS:
-
-```bash
-cd projectz_v.2
-DOMAIN_ROOT=matrikaregmi.com.np SUBDOMAIN=app APP_PORT=8002 ./scripts/setup_cloudflare_tunnel.sh
-```
-
-4) Start tunnel with generated config:
-
-```bash
-cloudflared --config ~/.cloudflared/config-projectz-main.yml tunnel run
-```
-
-Result:
-
-- Your fixed URL will be `https://app.matrikaregmi.com.np`
-- You can open it from your phone immediately (mobile network or Wi-Fi).
-
-Notes:
-
-- First run will open Cloudflare login in browser (`cloudflared tunnel login`).
-- Make sure your domain is active in your Cloudflare account.
-- If `app` is already used, change `SUBDOMAIN` (for example: `projectz`).
-
-## Google Cloud Always Free - Nginx + HTTPS (Domain)
-
-After `projectz-main-web` service is running, use Nginx as reverse proxy and enable HTTPS with Let's Encrypt.
-
-1) Point your domain DNS `A` record to your VM external IP.
-
-2) Ensure GCP firewall allows inbound `80` and `443`.
-
-3) On VM, run:
-
-```bash
-cd projectz_v.2
-DOMAIN=yourdomain.com EMAIL=you@example.com ./scripts/setup_nginx_https.sh
-```
-
-4) Verify:
-
-```bash
-curl -I http://yourdomain.com
-curl -I https://yourdomain.com
-sudo systemctl status nginx
-```
-
-Notes:
-
-- Script installs `nginx`, `certbot`, and `python3-certbot-nginx`.
-- It creates Nginx site config from `deploy/nginx/projectz.conf.template`.
-- It enables HTTP→HTTPS redirect automatically.
-
-## Google Cloud Firewall (One Command)
-
-Use this to open inbound `80/443` and (optionally) tag your VM.
-
-```bash
-cd projectz_v.2
-PROJECT_ID=<your-project-id> ./scripts/setup_gcp_firewall.sh
-```
-
-Apply the network tag to your VM in the same run:
-
-```bash
-PROJECT_ID=<your-project-id> INSTANCE_NAME=<vm-name> INSTANCE_ZONE=<zone> ./scripts/setup_gcp_firewall.sh
-```
-
-Notes:
-
-- Script path: `scripts/setup_gcp_firewall.sh`
-- Default firewall rule name: `projectz-allow-web`
-- Default target tag: `projectz-web`
-
-## Beginner One-Command Setup (VM)
-
-If you are starting from zero, run everything with one script:
-
-```bash
-cd projectz_v.2
-./scripts/full_gcp_setup.sh
-```
-
-With firewall + VM tag + HTTPS in same run:
-
-```bash
-PROJECT_ID=<your-project-id> INSTANCE_NAME=<vm-name> INSTANCE_ZONE=<zone> DOMAIN=yourdomain.com EMAIL=you@example.com ./scripts/full_gcp_setup.sh
-```
-
-Requirements for this script:
-
-- Folder layout on VM must be sibling directories:
-	- `projectz_v.2`
-	- `internal api`
-- VM user must have `sudo` access.
-- DNS A record must point to VM IP if using HTTPS.
+This README is part of the documentation bundle for version 5.0.  It is written in plain language, contains no emojis or automated‑style phrasing, and is suitable for publishing alongside the code in the `version_1` GitHub repository.
